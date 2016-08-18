@@ -1,4 +1,4 @@
-var Barracks = require("barracks");
+var Barracks = require("../src/index.js");
 
 var myDevice = {
   unitId: "unit1",
@@ -10,28 +10,14 @@ var myDevice = {
 };
 
 var barracks = new Barracks({
-  apiKey: "blablabla",
   unitId: myDevice.unitId
-});
-
-barracks.checkUpdate(myDevice.versionId, myDevice.customData).then(function (update) {
-  if (update) {
-    return update.download();
-  } else {
-    return Promise.resolve();
-  }
-}).then(function (file) {
-  // Do something with the file
-}).catch(function (err) {
-  console.log(err);
 });
 
 
 barracks.checkUpdate(myDevice.versionId, myDevice.customData).then(function (update) {
   if (update) {
     update.download().then(function (file) {
-      // Do something with the file
-
+      console.log('Success. File here');
     }).catch(function (err) {
       console.log(err);
     });
@@ -40,11 +26,9 @@ barracks.checkUpdate(myDevice.versionId, myDevice.customData).then(function (upd
   console.log(err);
 });
 
-
 barracks.checkUpdateAndDownload(myDevice.versionId, myDevice.customData).then(function (file) {
-  // Do something
+  console.log('checkUpdateAndDownloadSuccesssss ' + file);
 
 }).catch(function (err) {
   console.log(err);
 });
-

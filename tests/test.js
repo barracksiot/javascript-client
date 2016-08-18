@@ -40,8 +40,8 @@ describe('Check for an update : ', function() {
 
     barracks.checkUpdate(currentVersionId)
       .then(function(update) {
-        expect(update).to.be.a('object');
-        expect(update).to.have.property('versionId', updateVersionId);
+        expect(update.body).to.be.a('object');
+        expect(update.body).to.have.property('versionId', updateVersionId);
         done();
       }).catch(function (err) {
         done(err);
@@ -73,4 +73,41 @@ describe('Check for an update : ', function() {
       });
   });
 
+  it("Should download the update when .download is called", function(done) {
+    var currentVersionId = "v0.0.1";
+    var updateVersionId = "v0.0.2";
+    var unitId = "unit1";
+    var scope = nock(baseURL, { reqheaders: nockHeaders })
+      .post('/api/device/update/check', {
+        unitId: unitId,
+        versionId: currentVersionId
+      })
+      .reply(200, {
+        "versionId": updateVersionId,
+        "packageInfo": {
+          "url": "http://barracks.ddns.net/update/download/1152723d-a267-4cd5-aaac-511e568d4681",
+          "md5": "5f396472788fde9b770bffb7ae2c6deb",
+          "size": 1447
+        },
+        "properties": {
+          "jsonkey": "value"
+        }
+      });
+
+    var barracks = new Barracks({
+      apiKey: nockHeaders.Authorization,
+      unitId: unitId
+    });
+
+    barracks.checkUpdate(currentVersionId)
+      .then(function(update) {
+        expect(update.body).to.be.a('object');
+        expect(update.body).to.have.property('versionId', updateVersionId);
+
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+  });
 });
+
