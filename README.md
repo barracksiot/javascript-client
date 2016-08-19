@@ -34,6 +34,7 @@ barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
 });
 ```
 
+
 Check for an update and download it:
 ```js
 barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
@@ -51,7 +52,7 @@ barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
 });
 ```
 
-or, if you don't want to chain the Promises:
+Check for an update and download it without chaining the Promises:
 ```js
 barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
   if (update) {
@@ -66,7 +67,7 @@ barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
 });
 ```
 
-or the with a single function:
+Check for an update and download it with a single function:
 ```js
 barracks.checkUpdateAndDownload(currentDeviceVersion, customData).then(function (file) {
   // Do something with the file
