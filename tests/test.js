@@ -1,5 +1,4 @@
 /*global describe, it, beforeEach, before, afterEach */
-/** 1a7b3df2f64488c444d20204cdeb46ddd15792d6ef7f5309f46d697a7d87df8b **/
 var chai = require('chai'),
   expect = chai.expect,
   nock = require('nock'),
@@ -78,11 +77,12 @@ describe('Check for an update : ', function() {
       });
   });
 
-  it("Should download the update when .download is called and the file is valid", function(done) {
+  it("Should download the update when the file is valid", function (done) {
 
     var currentVersionId = "v0.0.1";
     var updateVersionId = "v0.0.2";
     var unitId = "unit1";
+    var mockFilePath = testDir + '/fixtures/validApplication';
     var ping = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
         unitId: unitId,
@@ -102,20 +102,23 @@ describe('Check for an update : ', function() {
 
     var download = nock(baseURL, { reqheaders: nockHeaders_dl })
       .get('/cdn/filename')
-      .reply(200, function(uri, requestBody) {
-        return fs.createReadStream(testDir + '/fixtures/validApplication');
-      });
+      .replyWithFile(200, mockFilePath);
 
     var barracks = new Barracks({
       apiKey: nockHeaders.Authorization,
-      unitId: unitId
+      unitId: unitId,
+      location: testDir + '/fixtures/tmp'
     });
 
     barracks.checkUpdate(currentVersionId)
       .then(function(update){
-        update.download(update.file).then(function(res){
-          console.log(res);
+        update.download(update.file).then(function(file){
+          var mockFileContent = fs.readFileSync(mockFilePath).toString();
+          var downloadedFileContent = fs.readFileSync(file).toString();
+          expect(downloadedFileContent).to.equal(mockFileContent);
           done();
+        }).catch(function (err) {
+          done(err);
         });
       }).catch(function (err) {
         done(err);
@@ -123,6 +126,89 @@ describe('Check for an update : ', function() {
   });
 
 
+  it("Should delete the update when the file is corrupted", function (done) {
+
+    var currentVersionId = "v0.0.1";
+    var updateVersionId = "v0.0.2";
+    var unitId = "unit1";
+    var mockFilePath = testDir + '/fixtures/validApplication';
+    var corruptMockFilePath = testDir + '/fixtures/invalidApplication';
+    var ping = nock(baseURL, { reqheaders: nockHeaders })
+      .post('/api/device/update/check', {
+        unitId: unitId,
+        versionId: currentVersionId
+      })
+      .reply(200, {
+        "versionId": updateVersionId,
+        "packageInfo": {
+          "url": baseURL + "/cdn/filename",
+          "md5": "1f1133ee77f0b3c66c948ae376d55715",
+          "size": 1447
+        },
+        "properties": {
+          "jsonkey": "value"
+        }
+      });
+
+    var download = nock(baseURL, { reqheaders: nockHeaders_dl })
+      .get('/cdn/filename')
+      .replyWithFile(200, corruptMockFilePath);
+
+    var barracks = new Barracks({
+      apiKey: nockHeaders.Authorization,
+      unitId: unitId,
+      location: testDir + '/fixtures/tmp'
+    });
+
+    barracks.checkUpdate(currentVersionId)
+      .then(function(update){
+        update.download(update.file).then(function(file){
+          done("MD5 should not match");
+        }).catch(function (err) {
+          expect(err).to.not.equal(undefined);
+          fs.exists(barracks.options.downloadDir + "/" + updateVersionId, function (exists) {
+            expect(exists).to.equal(false);
+            done();
+          });
+        });
+      }).catch(function (err) {
+        done(err);
+      });
+  });
+
+  it("Should fail when the server responds with error", function (done) {
+
+    var currentVersionId = "v0.0.1";
+    var updateVersionId = "v0.0.2";
+    var unitId = "unit1";
+    var ping = nock(baseURL, { reqheaders: nockHeaders })
+      .post('/api/device/update/check', {
+        unitId: unitId,
+        versionId: currentVersionId
+      })
+      .reply(400, {
+        "body": "Error message"
+      });
+
+    var barracks = new Barracks({
+      apiKey: nockHeaders.Authorization,
+      unitId: unitId,
+      location: testDir + '/fixtures/tmp'
+    });
+
+    barracks.checkUpdate(currentVersionId)
+      .then(function(update){
+        update.download(update.file).then(function(file){
+          done("Should return error message");
+        }).catch(function (err) {
+          expect(err).to.not.be.undefined;
+          done();
+        });
+      }).catch(function (err) {
+        console.log('err');
+        done();
+      });
+  });
 
 });
 

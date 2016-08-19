@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "chai": "~3.4.1",
+		"chai-fs": "^0.1.0",
     "chai-http": "~1.0.0",
     "debug": "^2.2.0",
     "grunt": "~0.4.5",
@@ -20,7 +21,6 @@
     "request-debug": "^0.2.0"
   },
   "dependencies": {
-    "node-fetch": "^1.6.0",
     "request": "^2.74.0"
   }
 }
