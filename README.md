@@ -1,44 +1,85 @@
-# Barracks Node SDK
+# Barracks SDK for JavaScript
+The JavaScript SDK to interact with the [Barracks](https://barracks.io/) API
 
-## CURL examples
+![001501-cloud-location-1.png](https://bitbucket.org/repo/yLK99j/images/729711508-001501-cloud-location-1.png)
 
-**Check for updates:**
-```
-curl -v -XPOST -H "Authorization: ea355a683652ddad0461fc279f5a64687930bcb12502c044706a7d1d73972a0e" -H "Content-type: application/json" -d '{ "unitId": "unit'$c'", "versionId": "v0.0.1" }' https://130.211.14.34/api/device/update/check --insecure
-```
-- 204 no content
-- 200 update available
-```
-{
-	"versionId":"unique1",
-	"packageInfo":{
-		"url":"<http://barracks.ddns.net/update/download/1152723d-a267-4cd5-aaac-511e568d4681",
-		"md5":"5f396472788fde9b770bffb7ae2c6deb",
-		"size":1447
-	},
-	"properties":{
-		"jsonkey":"value"
-	}
-}
-```
-- Download file
-- Check hash
-- Check size?
-- Execute callback, pass on properties if necessary
+## Installation
 
-**Download update:**
-```
-curl -H "Authorization: ea355a683652ddad0461fc279f5a64687930bcb12502c044706a7d1d73972a0e" https://130.211.14.34/api/device/update/download/b3f3ecc7-0f93-4d9d-92d6-668a6ff8b1ee --insecure > flux.zip
+```bash
+$ npm install barracks
 ```
 
-## Live environments
+## Usage
 
-- https://130.211.14.34 ==> Prod
-- https://barracks.ddns.net/ ==> dev
-- http://integration.barracks.io/ui/ ==> integration
+Create a Barracks SDK instance:
+```js
+var Barracks = require("barracks");
 
-1a7b3df2f64488c444d20204cdeb46ddd15792d6ef7f5309f46d697a7d87df8b
+var barracks = new Barracks({
+  apiKey: "7657657AE76567CD6757EF",
+  unitId: "My unique device identifier"
+});
+```
 
-# Questions so far
+Check for an update:
+```js
+barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
+  if (update) {
+    // Do something with the update
+  } else {
+    // Do something when no updates are available
+  }
+}).catch(function (err) {
+  // Do something with the error
+});
+```
 
--
+Check for an update and download it:
+```js
+barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
+  if (update) {
+    return update.download();
+  } else {
+    return Promise.resolve();
+  }
+}).then(function (file) {
+  if (file) {
+    // Do something with the file
+  }
+}).catch(function (err) {
+  // Do something with the error
+});
+```
+
+or, if you don't want to chain the Promises:
+```js
+barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
+  if (update) {
+    update.download().then(function (file) {
+      // Do something with the file
+    }).catch(function (err) {
+      // Do something with the download error
+    });
+  }
+}).catch(function (err) {
+  // Do something with the check error
+});
+```
+
+or the with a single function:
+```js
+barracks.checkUpdateAndDownload(currentDeviceVersion, customData).then(function (file) {
+  // Do something with the file
+}).catch(function (err) {
+  // Do something with the error
+});
+```
+
+## Docs & Community
+
+* [Website and Documentation](https://barracks.io/)
+* [Github Organization](https://github.com/barracksiot) for other official SDKs
+
+## License
+
+  [Apache License, Version 2.0](LICENSE)
