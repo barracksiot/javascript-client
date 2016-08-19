@@ -1,7 +1,7 @@
+![001501-cloud-location-1.png](https://bitbucket.org/repo/yLK99j/images/4081600440-001501-cloud-location-1.png)
+
 # Barracks SDK for JavaScript
 The JavaScript SDK to interact with the [Barracks](https://barracks.io/) API
-
-![001501-cloud-location-1.png](https://bitbucket.org/repo/yLK99j/images/729711508-001501-cloud-location-1.png)
 
 ## Installation
 
