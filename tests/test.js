@@ -4,22 +4,25 @@ var chai = require('chai'),
   nock = require('nock'),
   fs = require('fs'),
   Barracks = require('../src/index.js'),
+
+
   testDir = __dirname,
   baseURL = 'https://barracks.ddns.net',
   nockHeaders = {
     'Authorization': 'validKey',
     'Content-type': 'application/json'
-  };
+  },
   nockHeaders_dl = {
     'Authorization': 'validKey',
-  };
+  },
+  currentVersionId = "v0.0.1",
+  updateVersionId = "v0.0.2",
+  unitId = "unit1";
 
 describe('Check for an update : ', function() {
 
   it("Should return an update when one is available", function(done) {
-    var currentVersionId = "v0.0.1";
-    var updateVersionId = "v0.0.2";
-    var unitId = "unit1";
+
     var scope = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
         unitId: unitId,
@@ -53,9 +56,6 @@ describe('Check for an update : ', function() {
   });
 
   it("Should not return an update when there is none", function(done) {
-    var currentVersionId = "v0.0.1";
-    var updateVersionId = "v0.0.2";
-    var unitId = "unit1";
     var scope = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
         unitId: unitId,
@@ -79,10 +79,8 @@ describe('Check for an update : ', function() {
 
   it("Should download the update when the file is valid", function (done) {
 
-    var currentVersionId = "v0.0.1";
-    var updateVersionId = "v0.0.2";
-    var unitId = "unit1";
     var mockFilePath = testDir + '/fixtures/validApplication';
+
     var ping = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
         unitId: unitId,
@@ -127,9 +125,6 @@ describe('Check for an update : ', function() {
 
   it("Should check and download the update simultaneously", function (done) {
 
-    var currentVersionId = "v0.0.1";
-    var updateVersionId = "v0.0.2";
-    var unitId = "unit1";
     var mockFilePath = testDir + '/fixtures/validApplication';
     var ping = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
@@ -171,9 +166,6 @@ describe('Check for an update : ', function() {
 
   it("Should delete the update when the file is corrupted", function (done) {
 
-    var currentVersionId = "v0.0.1";
-    var updateVersionId = "v0.0.2";
-    var unitId = "unit1";
     var mockFilePath = testDir + '/fixtures/validApplication';
     var corruptMockFilePath = testDir + '/fixtures/invalidApplication';
     var ping = nock(baseURL, { reqheaders: nockHeaders })
@@ -221,9 +213,6 @@ describe('Check for an update : ', function() {
 
   it("Should fail when the server responds with error", function (done) {
 
-    var currentVersionId = "v0.0.1";
-    var updateVersionId = "v0.0.2";
-    var unitId = "unit1";
     var ping = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
         unitId: unitId,
