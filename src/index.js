@@ -1,20 +1,65 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 module.exports = (function () {
-
   "use strict";
 
   var request = require("request");
   var fs = require('fs');
-  var md5 = require('md5');
+  var crypto = require('crypto');
   //require('request-debug')(request);
+
+
+  function download(update, options) {
+    return new Promise(function (resolve, reject) {
+      var downloadParams = {
+        url: update.packageInfo.url,
+        method: 'GET',
+        headers: {
+          'Authorization': options.apiKey,
+        }
+      };
+      var file = options.downloadDir + "/" + update.versionId;
+
+      request(downloadParams)
+        .on('response', function(response) {
+          if (response.statusCode != 200) {
+            reject(response.body.error);
+          } else {
+            checksum(file, update.packageInfo.md5).then(function () {
+              resolve(file);
+            }).catch(function (err) {
+              reject(err);
+            });
+          }
+        })
+        .pipe(fs.createWriteStream(file));
+    });
+  }
+
+  function checksum(file, validSum) {
+    return new Promise(function (resolve, reject) {
+      fs.readFile(file, function (err, buf) {
+        if (err) {
+          reject(err);
+        } else {
+          var sumToCheck = crypto.createHash('md5').update(buf).digest("hex");
+          if (sumToCheck === validSum){
+            resolve();
+          } else {
+            fs.unlinkSync(file);
+            reject('Checksum failed');
+          }
+        }
+      });
+    });
+  }
 
   function Barracks(options) {
     this.options = {
       baseURL: options.baseURL || 'https://barracks.ddns.net',
       apiKey: options.apiKey || '1a7b3df2f64488c444d20204cdeb46ddd15792d6ef7f5309f46d697a7d87df8b',
       unitId: options.unitId || 'unit1',
-      downloadDir: options.location || './tmp/'
+      downloadDir: options.location || '/tmp'
     };
   }
 
@@ -28,6 +73,8 @@ module.exports = (function () {
           }).catch(function (err) {
             reject(err);
           });
+        } else {
+          resolve();
         }
       }).catch(function (err) {
         reject(err);
@@ -53,66 +100,22 @@ module.exports = (function () {
       };
 
       request(requestOptions, function(error, response, body){
-        if (!error) {
+        if (error) {
+          reject(error);
+        } else {
           if (response.statusCode === 204) {
             resolve();
           } else {
-            var update = {};
-            update.meta = JSON.parse(body);
-            update.download = function(){
-              return that.download(update);
-            };
+            var update = Object.assign({}, JSON.parse(body), {
+              download: function () {
+                return download(update, that.options);
+              }
+            });
             resolve(update);
           }
         }
-        reject(error);
       });
 
-    });
-  };
-
-  Barracks.prototype.checksum = function(update) {
-    var validSum = update.meta.packageInfo.md5;
-    var isValid = false;
-
-    return new Promise(function (resolve, reject) {
-      fs.readFile(update.file, function(err, buf) {
-        var actualSum = md5(buf);
-        if (actualSum === validSum){
-          reject();
-        } else {
-          reject('Checksum failed');
-        }
-      });
-    });
-  };
-
-  Barracks.prototype.download = function(update) {
-    var that = this;
-
-    return new Promise(function (resolve, reject) {
-      var downloadParams = {
-        url: update.meta.packageInfo.url,
-        method: 'GET',
-        headers: {
-          'Authorization': that.options.apiKey,
-        }
-      };
-      update.file = that.options.downloadDir + update.meta.versionId;
-
-      request(downloadParams)
-        .on('response', function(response) {
-          if (response.statusCode != 200){
-            reject(response.statusCode);
-          } else {
-            if( that.checksum(update) ){
-              resolve(update.file);
-            } else {
-              reject('Checksum failed');
-            }
-          }
-        })
-        .pipe(fs.createWriteStream(update.file));
     });
   };
 

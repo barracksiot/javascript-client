@@ -17,18 +17,18 @@ var barracks = new Barracks({
 barracks.checkUpdate(myDevice.versionId, myDevice.customData).then(function (update) {
   if (update) {
     update.download().then(function (file) {
-      console.log('Success. File here');
+      console.log('checkUpdate success: ' + file);
     }).catch(function (err) {
       console.log(err);
     });
   }
 }).catch(function (err) {
-  console.log(err);
+  console.trace(err);
 });
 
-barracks.checkUpdateAndDownload(myDevice.versionId, myDevice.customData).then(function (file) {
-  console.log('checkUpdateAndDownloadSuccesssss ' + file);
-
-}).catch(function (err) {
-  console.log(err);
-});
+  barracks.checkUpdateAndDownload(myDevice.versionId, myDevice.customData)
+    .then(function (file) {
+      console.log('checkUpdateAndDownload Success: ' + file);
+    }).catch(function (err) {
+      console.log(err);
+    });

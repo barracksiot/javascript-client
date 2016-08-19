@@ -20,7 +20,6 @@
     "request-debug": "^0.2.0"
   },
   "dependencies": {
-    "md5": "^2.1.0",
     "node-fetch": "^1.6.0",
     "request": "^2.74.0"
   }
