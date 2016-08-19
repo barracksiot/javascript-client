@@ -125,6 +125,49 @@ describe('Check for an update : ', function() {
       });
   });
 
+  it("Should check and download the update simultaneously", function (done) {
+
+    var currentVersionId = "v0.0.1";
+    var updateVersionId = "v0.0.2";
+    var unitId = "unit1";
+    var mockFilePath = testDir + '/fixtures/validApplication';
+    var ping = nock(baseURL, { reqheaders: nockHeaders })
+      .post('/api/device/update/check', {
+        unitId: unitId,
+        versionId: currentVersionId
+      })
+      .reply(200, {
+        "versionId": updateVersionId,
+        "packageInfo": {
+          "url": baseURL + "/cdn/filename",
+          "md5": "1f1133ee77f0b3c66c948ae376d55715",
+          "size": 1447
+        },
+        "properties": {
+          "jsonkey": "value"
+        }
+      });
+
+    var download = nock(baseURL, { reqheaders: nockHeaders_dl })
+      .get('/cdn/filename')
+      .replyWithFile(200, mockFilePath);
+
+    var barracks = new Barracks({
+      apiKey: nockHeaders.Authorization,
+      unitId: unitId,
+      location: testDir + '/fixtures/tmp'
+    });
+
+    barracks.checkUpdateAndDownload(currentVersionId)
+      .then(function (file) {
+        var mockFileContent = fs.readFileSync(mockFilePath).toString();
+        var downloadedFileContent = fs.readFileSync(file).toString();
+        expect(downloadedFileContent).to.equal(mockFileContent);
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+  });
 
   it("Should delete the update when the file is corrupted", function (done) {
 
