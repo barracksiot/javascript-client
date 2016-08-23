@@ -19,7 +19,6 @@ module.exports = (function () {
         }
       };
       var file = options.downloadDir + "/" + update.versionId;
-
       request(downloadParams)
         .on('response', function(response) {
           if (response.statusCode != 200) {
@@ -57,8 +56,8 @@ module.exports = (function () {
   function Barracks(options) {
     this.options = {
       baseURL: options.baseURL || 'https://barracks.ddns.net',
-      apiKey: options.apiKey || '1a7b3df2f64488c444d20204cdeb46ddd15792d6ef7f5309f46d697a7d87df8b',
-      unitId: options.unitId || 'unit1',
+      apiKey: options.apiKey,
+      unitId: options.unitId,
       downloadDir: options.downloadLocation || '/tmp'
     };
   }
