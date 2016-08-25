@@ -7,7 +7,7 @@ var chai = require('chai'),
 
 
   testDir = __dirname,
-  baseURL = 'https://barracks.ddns.net',
+  baseURL = 'https://domain.name',
   nockHeaders = {
     'Authorization': 'validKey',
     'Content-type': 'application/json'
@@ -15,9 +15,9 @@ var chai = require('chai'),
   nockHeaders_dl = {
     'Authorization': 'validKey',
   },
-  currentVersionId = "v0.0.1",
-  updateVersionId = "v0.0.2",
-  unitId = "unit1";
+  currentVersionId = 'v0.0.1',
+  updateVersionId = 'v0.0.2',
+  unitId = 'unit1';
 
 describe('Check for an update : ', function() {
 
@@ -31,7 +31,7 @@ describe('Check for an update : ', function() {
       .reply(200, {
         "versionId": updateVersionId,
         "packageInfo": {
-          "url": "https://barracks.ddns.net/update/download/1152723d-a267-4cd5-aaac-511e568d4681",
+          "url": baseURL+ 'update/download/1152723d-a267-4cd5-aaac-511e568d4681',
           "md5": "5f396472788fde9b770bffb7ae2c6deb",
           "size": 1447
         },
@@ -44,7 +44,7 @@ describe('Check for an update : ', function() {
       baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
       unitId: unitId,
-      downloadDir: '/home/pod/dev/tartampion'
+      downloadDir: '/tmp/files'
     });
 
     console.log('ch')
@@ -71,7 +71,7 @@ describe('Check for an update : ', function() {
       baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
       unitId: unitId,
-      downloadDir: '/home/pod/dev/tartampion'
+      downloadDir: '/tmp/filesn'
     });
 
     barracks.checkUpdate(currentVersionId)
@@ -251,6 +251,5 @@ describe('Check for an update : ', function() {
         done();
       });
   });
-
 });
 

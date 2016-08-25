@@ -40,7 +40,16 @@ module.exports = (function () {
       md5File(file).then(function (hash) {
         if (hash == validSum)
           resolve()
-        else reject('Checksum don\'t match');
+        else{
+          fs.unlink(file, function (err) {
+            if (err) {
+              console.error('Error when removing file: ' + err);
+            } else {
+              console.log('Package removed from file system');
+            }
+          });
+          reject('Checksum don\'t match');
+        }
       }).catch(function (err) {
         console.log(err)
       });

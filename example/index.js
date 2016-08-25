@@ -12,9 +12,9 @@ process.argv.forEach(function (val, index, array) {
 /** baseUrl is the URL used for Barracks API. By default, it's http://app.barracks.io **
  ** but it can be changed for your own subdomain for example. See the Barracks        **
  ** documentation for more information.                                               **/
-var barracksBaseUrl = "https://barracks.ddns.net";//args.baseUrl;
+var barracksBaseUrl = args.baseUrl;
 /** apiKey is your user api key that you can find on the  **/
-var barracksApiKey = "eafeabd7a13bacf44a8122ed4f7093c5c7b356a4f567df2654984fffef2a67be";//args.apiKey;
+var barracksApiKey = args.apiKey;
 
 var device = {
   versionId: 'v0.0.0',
@@ -25,7 +25,7 @@ var barracks = new Barracks({
   baseURL: barracksBaseUrl,
   apiKey: barracksApiKey,
   unitId: device.unitId,
-  downloadDir: '/home/pod/dev/tartampion'
+  downloadDir: '/tmp/files'
 });
 
 
