@@ -6,7 +6,7 @@ module.exports = (function () {
   var request = require("request");
   var fs = require('fs');
   var crypto = require('crypto');
-  //require('request-debug')(request);
+  var md5File = require('md5-file/promise')
 
 
   function download(update, options) {
@@ -18,51 +18,47 @@ module.exports = (function () {
           'Authorization': options.apiKey,
         }
       };
+      console.log("Plop1");
       var file = options.downloadDir + "/" + update.versionId;
-      request(downloadParams)
-        .on('response', function(response) {
+      var req = request(downloadParams)
+        .on('response', function (response) {
           if (response.statusCode != 200) {
+            req.abort()
             reject(response.body.error);
-          } else {
-            checksum(file, update.packageInfo.md5).then(function () {
-              resolve(file);
-            }).catch(function (err) {
-              reject(err);
-            });
           }
-        })
-        .pipe(fs.createWriteStream(file));
+        }).pipe(fs.createWriteStream(file))
+        .on('close', function () {
+          checksum(file, update.packageInfo.md5).then(function () {
+            resolve(file);
+          }).catch(function (err) {
+            reject(err);
+          });
+        });
     });
   }
 
   function checksum(file, validSum) {
     return new Promise(function (resolve, reject) {
-      fs.readFile(file, function (err, buf) {
-        if (err) {
-          reject(err);
-        } else {
-          var sumToCheck = crypto.createHash('md5').update(buf).digest("hex");
-          if (sumToCheck === validSum){
-            resolve();
-          } else {
-            fs.unlinkSync(file);
-            reject('Checksum failed');
-          }
-        }
+      md5File(file).then(function (hash) {
+        if (hash == validSum)
+          resolve()
+        else reject('Checksum don\'t match');
+      }).catch(function (err) {
+        console.log(err)
       });
     });
   }
 
   function Barracks(options) {
     this.options = {
-      baseURL: options.baseURL || 'https://barracks.ddns.net',
+      baseURL: options.baseURL || 'https://app.barracks.io',
       apiKey: options.apiKey,
       unitId: options.unitId,
       downloadDir: options.downloadLocation || '/tmp'
     };
   }
 
-  Barracks.prototype.checkUpdateAndDownload = function(versionId, customData) {
+  Barracks.prototype.checkUpdateAndDownload = function (versionId, customData) {
     var that = this;
     return new Promise(function (resolve, reject) {
       that.checkUpdate(versionId, customData).then(function (update) {
@@ -81,7 +77,7 @@ module.exports = (function () {
     });
   };
 
-  Barracks.prototype.checkUpdate = function(versionId, customData) {
+  Barracks.prototype.checkUpdate = function (versionId, customData) {
     var that = this;
     return new Promise(function (resolve, reject) {
       var requestOptions = {
@@ -98,7 +94,7 @@ module.exports = (function () {
         })
       };
 
-      request(requestOptions, function(error, response, body){
+      request(requestOptions, function (error, response, body) {
         if (error) {
           reject(error);
         } else {
@@ -114,7 +110,6 @@ module.exports = (function () {
           }
         }
       });
-
     });
   };
 
