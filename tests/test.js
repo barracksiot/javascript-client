@@ -47,7 +47,6 @@ describe('Check for an update : ', function() {
       downloadDir: '/tmp/files'
     });
 
-    console.log('ch')
     barracks.checkUpdate(currentVersionId)
       .then(function(update) {
         console.log(update)
