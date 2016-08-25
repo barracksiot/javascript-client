@@ -5,7 +5,6 @@ module.exports = (function () {
 
   var request = require("request");
   var fs = require('fs');
-  var crypto = require('crypto');
   var md5File = require('md5-file/promise')
 
 
@@ -18,7 +17,6 @@ module.exports = (function () {
           'Authorization': options.apiKey,
         }
       };
-      console.log("Plop1");
       var file = options.downloadDir + "/" + update.versionId;
       var req = request(downloadParams)
         .on('response', function (response) {

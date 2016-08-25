@@ -43,7 +43,6 @@ function waitAndDisplayUpdate() {
               console.err('Error when reading file: ' + err);
               waitAndDisplayUpdate();
             } else {
-              //console.log(data);
               //device.versionId = update.versionId;
               fs.unlink(file, function (err) {
                 if (err) {

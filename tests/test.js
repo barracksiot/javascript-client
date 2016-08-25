@@ -31,7 +31,7 @@ describe('Check for an update : ', function() {
       .reply(200, {
         "versionId": updateVersionId,
         "packageInfo": {
-          "url": "http://barracks.ddns.net/update/download/1152723d-a267-4cd5-aaac-511e568d4681",
+          "url": "https://barracks.ddns.net/update/download/1152723d-a267-4cd5-aaac-511e568d4681",
           "md5": "5f396472788fde9b770bffb7ae2c6deb",
           "size": 1447
         },
@@ -41,12 +41,16 @@ describe('Check for an update : ', function() {
       });
 
     var barracks = new Barracks({
+      baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
-      unitId: unitId
+      unitId: unitId,
+      downloadDir: '/home/pod/dev/tartampion'
     });
 
+    console.log('ch')
     barracks.checkUpdate(currentVersionId)
       .then(function(update) {
+        console.log(update)
         expect(update).to.be.a('object');
         expect(update).to.have.property('versionId', updateVersionId);
         done();
@@ -64,8 +68,10 @@ describe('Check for an update : ', function() {
       .reply(204);
 
     var barracks = new Barracks({
+      baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
-      unitId: unitId
+      unitId: unitId,
+      downloadDir: '/home/pod/dev/tartampion'
     });
 
     barracks.checkUpdate(currentVersionId)
@@ -103,9 +109,10 @@ describe('Check for an update : ', function() {
       .replyWithFile(200, mockFilePath);
 
     var barracks = new Barracks({
+      baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
       unitId: unitId,
-      location: testDir + '/fixtures/tmp'
+      downloadDir: testDir + '/fixtures/tmp'
     });
 
     barracks.checkUpdate(currentVersionId)
@@ -148,6 +155,7 @@ describe('Check for an update : ', function() {
       .replyWithFile(200, mockFilePath);
 
     var barracks = new Barracks({
+      baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
       unitId: unitId,
       location: testDir + '/fixtures/tmp'
@@ -190,6 +198,7 @@ describe('Check for an update : ', function() {
       .replyWithFile(200, corruptMockFilePath);
 
     var barracks = new Barracks({
+      baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
       unitId: unitId,
       location: testDir + '/fixtures/tmp'
@@ -223,6 +232,7 @@ describe('Check for an update : ', function() {
       });
 
     var barracks = new Barracks({
+      baseURL: baseURL,
       apiKey: nockHeaders.Authorization,
       unitId: unitId,
       location: testDir + '/fixtures/tmp'
