@@ -28,7 +28,6 @@ var barracks = new Barracks({
   downloadDir: '/tmp/files'
 });
 
-
 function waitAndDisplayUpdate() {
   setTimeout(function () {
     barracks.checkUpdate(device.versionId).then(function (update) {
@@ -43,7 +42,7 @@ function waitAndDisplayUpdate() {
               console.err('Error when reading file: ' + err);
               waitAndDisplayUpdate();
             } else {
-              //device.versionId = update.versionId;
+              device.versionId = update.versionId;
               fs.unlink(file, function (err) {
                 if (err) {
                   console.error('Error when removing file: ' + err);

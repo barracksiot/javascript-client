@@ -4,8 +4,6 @@ var chai = require('chai'),
   nock = require('nock'),
   fs = require('fs'),
   Barracks = require('../src/index.js'),
-
-
   testDir = __dirname,
   baseURL = 'https://domain.name',
   nockHeaders = {
@@ -19,9 +17,9 @@ var chai = require('chai'),
   updateVersionId = 'v0.0.2',
   unitId = 'unit1';
 
-describe('Check for an update : ', function() {
+describe('Check for an update : ', function () {
 
-  it("Should return an update when one is available", function(done) {
+  it("Should return an update when one is available", function (done) {
 
     var scope = nock(baseURL, { reqheaders: nockHeaders })
       .post('/api/device/update/check', {
@@ -48,10 +46,11 @@ describe('Check for an update : ', function() {
     });
 
     barracks.checkUpdate(currentVersionId)
-      .then(function(update) {
-        console.log(update)
+      .then(function (update) {
         expect(update).to.be.a('object');
         expect(update).to.have.property('versionId', updateVersionId);
+        expect(update).to.have.property('properties');
+        expect(update).to.have.property('packageInfo');
         done();
       }).catch(function (err) {
         done(err);
@@ -75,7 +74,7 @@ describe('Check for an update : ', function() {
 
     barracks.checkUpdate(currentVersionId)
       .then(function(update) {
-        expect(update).to.be.equal(undefined);
+        expect(update).to.be.undefined;
         done();
       }).catch(function (err) {
         done(err);
