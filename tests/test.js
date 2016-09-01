@@ -33,7 +33,7 @@ beforeEach(function() {
 describe('Check for an update : ', function () {
 
   it('Should return an update when one is available', function (done) {
-    var updateProperties = { jsonkey: "value" };
+    var updateProperties = { jsonkey: 'value' };
     var packageInfo = {
       url: baseURL+ 'update/download/1152723d-a267-4cd5-aaac-511e568d4681',
       md5: '5f396472788fde9b770bffb7ae2c6deb',
@@ -201,14 +201,8 @@ describe('Check for an update : ', function () {
     });
 
     barracks.checkUpdate(currentVersionId).then(function(update){
-      update.download(update.file).then(function(file){
-        done('Should return error message');
-      }).catch(function (err) {
-        expect(err).to.not.be.undefined;
-        done();
-      });
+      done('Should be an error');
     }).catch(function (err) {
-      console.log('err');
       done();
     });
   });
