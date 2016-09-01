@@ -13,8 +13,14 @@ process.argv.forEach(function (val, index, array) {
  ** but it can be changed for your own subdomain for example. See the Barracks        **
  ** documentation for more information.                                               **/
 var barracksBaseUrl = args.baseUrl;
-/** apiKey is your user api key that you can find on the Account page of Barracks **/
 var barracksApiKey = args.apiKey;
+
+if (!apiKey) {
+  console.log('Argument --apiKey <API_KEY> is mandatory.');
+  console.log('<API_KEY> is your user api key that you can find on the Account page of Barracks.');
+  console.log('You can also use the argument --baseUrl <BARRACKS_URL> if you want to request another domain than the default one.');
+  exit();
+}
 
 var device = {
   versionId: 'v0.0.0',
@@ -57,7 +63,7 @@ function waitAndDisplayUpdate() {
           console.log(err);
         });
       } else {
-        console.log("No updates available");
+        console.log('No updates available');
         waitAndDisplayUpdate();
       }
     }).catch(function (err) {
