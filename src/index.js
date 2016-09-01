@@ -14,7 +14,7 @@ module.exports = (function () {
         url: update.packageInfo.url,
         method: 'GET',
         headers: {
-          'Authorization': options.apiKey,
+          Authorization: options.apiKey,
         }
       };
       var file = options.downloadDir + "/" + update.versionId;
@@ -97,7 +97,7 @@ module.exports = (function () {
         body: JSON.stringify({
           unitId: that.options.unitId,
           versionId: versionId,
-          additionalProperties: customData
+          customClientData: customData
         })
       };
 
