@@ -13,7 +13,7 @@ process.argv.forEach(function (val, index, array) {
  ** but it can be changed for your own subdomain for example. See the Barracks        **
  ** documentation for more information.                                               **/
 var barracksBaseUrl = args.baseUrl;
-/** apiKey is your user api key that you can find on the  **/
+/** apiKey is your user api key that you can find on the Account page of Barracks **/
 var barracksApiKey = args.apiKey;
 
 var device = {
