@@ -31,7 +31,7 @@ var barracks = new Barracks({
   baseURL: barracksBaseUrl,
   apiKey: barracksApiKey,
   unitId: device.unitId,
-  downloadDir: '/tmp/files'
+  downloadFilePath: '/tmp/file.tmp'
 });
 
 function waitAndDisplayUpdate() {
