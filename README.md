@@ -40,9 +40,8 @@ Check for an update and download it:
 barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
   if (update) {
     return update.download();
-  } else {
-    return Promise.resolve();
   }
+  return Promise.resolve();
 }).then(function (file) {
   if (file) {
     // Do something with the file
