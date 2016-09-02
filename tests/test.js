@@ -321,4 +321,33 @@ describe('Check for an update : ', function () {
       done(err);
     });
   });
+
+
+  it('Should throw a "DOWNLOAD_FAILED" exception when server return http code != 200', function (done) {
+    var expectedErrorMessage = 'Serveur replied with HTTP 400';
+
+    getCheckUpdateEntrypoint().reply(200, {
+      versionId:    UPDATE_VERSION_ID,
+      packageInfo:  packageInfo,
+      properties:   updateProperties
+    });
+
+    getDownloadUpdateEntrypoint(UPDATE_ID).reply(400, {
+      body: 'Error message'
+    });
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
+        done('Download should fail');
+      }).catch(function (err) {
+        expect(err).to.be.a('object');
+        expect(err).to.have.property('type', 'DOWNLOAD_FAILED');
+        expect(err).to.have.property('message', expectedErrorMessage);
+        done();
+      });
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
 });

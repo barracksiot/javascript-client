@@ -2,6 +2,9 @@
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
+var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
+var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
 var CHECK_UPDATE_ENDPOINT       = '/api/device/update/check';
@@ -24,8 +27,10 @@ function download(update, options) {
     var file = options.downloadFilePath;
     var req = request(downloadParams).on('response', function (response) {
       if (response.statusCode != 200) {
-        req.abort();
-        reject(response.body.error);
+        reject({
+          type: ERROR_DOWNLOAD_FAILED,
+          message: 'Serveur replied with HTTP ' + response.statusCode
+        });
       }
     }).pipe(fs.createWriteStream(file)).on('close', function () {
       downloadChecker.check(file, update.packageInfo.md5).then(function () {
@@ -84,7 +89,10 @@ Barracks.prototype.checkUpdate = function (versionId, customData) {
 
     request(requestOptions, function (error, response, body) {
       if (error) {
-        reject(error);
+        reject({
+          type: ERROR_REQUEST_FAILED,
+          message: error
+        });
       } else {
         if (response.statusCode === 204) {
           resolve();
@@ -96,7 +104,10 @@ Barracks.prototype.checkUpdate = function (versionId, customData) {
           });
           resolve(update);
         } else {
-          reject(body);
+          reject({
+            type: ERROR_UNEXPECTED_SERVER_RESPONSE,
+            message: body
+          });
         }
       }
     });
