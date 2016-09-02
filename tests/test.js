@@ -27,25 +27,52 @@ var NOCK_CDN_HEADERS = {
   'Authorization': 'validKey'
 };
 
+var unlinkMock;
+var md5File;
+
 var mockedServer;
 var mockedCDNServer;
 var barracks;
 var updateProperties;
-var unlinkMock = function (file, callback) {
-  var fs = require('fs');
-  fs.unlink(file, callback);
-};
 
-proxyquire('../src/downloadChecker', {
-  'fs': {
-    unlink: function (file, callback) {
-      unlinkMock(file, callback);
+proxyfyModules();
+
+function proxyfyModules() {
+  proxyquire('../src/downloadChecker', {
+    'fs': {
+      unlink: function (file, callback) {
+        unlinkMock(file, callback);
+      }
+    },
+    'md5-file/promise': function (file) {
+      return md5File(file);
     }
-  } 
-});
+  });
+}
+
+function getCheckUpdateEntrypoint(customClientData) {
+  return mockedServer.post(CHECK_UPDATE_ENDPOINT, {
+    unitId:           UNIT_ID,
+    versionId:        CURRENT_VERSION_ID,
+    customClientData: customClientData
+  });
+}
+
+function getDownloadUpdateEntrypoint(updateId) {
+  return mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + updateId);
+}
 
 beforeEach(function () {
   var Barracks = require('../src/index.js');
+
+  unlinkMock = function (file, callback) {
+    var fs = require('fs');
+    fs.unlink(file, callback);
+  };
+  md5File = function(file) {
+    var md5File = require('md5-file/promise');
+    return md5File(file);
+  };
 
   mockedServer    = nock(BASE_URL, { reqheaders: NOCK_HEADERS });
   mockedCDNServer = nock(BASE_URL, { reqheaders: NOCK_CDN_HEADERS });
@@ -64,21 +91,6 @@ beforeEach(function () {
     size: MOCK_FILE_SIZE
   };
 });
-
-afterEach(function () {
-  unlinkMock = function (file, callback) {
-    var fs = require('fs');
-    fs.unlink(file, callback);
-  };
-});
-
-function getCheckUpdateEntrypoint(customClientData) {
-  return mockedServer.post(CHECK_UPDATE_ENDPOINT, {
-    unitId:           UNIT_ID,
-    versionId:        CURRENT_VERSION_ID,
-    customClientData: customClientData
-  })
-}
 
 describe('Check for an update : ', function () {
 
@@ -130,7 +142,7 @@ describe('Check for an update : ', function () {
       properties:   updateProperties
     });
 
-    mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
+    getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
     barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
       update.download(update.file).then(function(file) {
@@ -154,39 +166,13 @@ describe('Check for an update : ', function () {
       properties:   updateProperties
     });
 
-    mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
+    getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
     barracks.checkUpdateAndDownload(CURRENT_VERSION_ID).then(function (file) {
       var mockFileContent = fs.readFileSync(MOCK_FILE_PATH).toString();
       var downloadedFileContent = fs.readFileSync(file).toString();
       expect(downloadedFileContent).to.equal(mockFileContent);
       done();
-    }).catch(function (err) {
-      done(err);
-    });
-  });
-
-
-  it('Should delete the update when the file is corrupted', function (done) {    
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
-
-    mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
-
-    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
-      update.download(update.file).then(function(file) {
-        done('MD5 should not match');
-      }).catch(function (err) {
-        expect(err).to.not.equal(undefined);
-        expect(barracks.options.downloadFilePath).to.be.a('string');
-        fs.exists(barracks.options.downloadFilePath, function (exists) {
-          expect(exists).to.equal(false);
-          done();
-        });
-      });
     }).catch(function (err) {
       done(err);
     });
@@ -226,7 +212,33 @@ describe('Check for an update : ', function () {
   });
 
 
-  it('Should throw an exception when the file deletion failed', function (done) {
+  it('Should delete the update when the file is corrupted', function (done) {    
+    getCheckUpdateEntrypoint().reply(200, {
+      versionId:    UPDATE_VERSION_ID,
+      packageInfo:  packageInfo,
+      properties:   updateProperties
+    });
+
+    getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
+        done('MD5 should not match');
+      }).catch(function (err) {
+        expect(err).to.not.equal(undefined);
+        expect(barracks.options.downloadFilePath).to.be.a('string');
+        fs.exists(barracks.options.downloadFilePath, function (exists) {
+          expect(exists).to.equal(false);
+          done();
+        });
+      });
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+
+  it('Should throw a "DELETE_FILE_FAILED" exception when the file deletion fail', function (done) {
     var errorMessage = 'error deleting file';
     var expectedErrorMessage = 'Error when removing file ' + DOWNLOAD_FILE_PATH + ': ' + errorMessage;
     unlinkMock = function (file, callback) {
@@ -239,14 +251,70 @@ describe('Check for an update : ', function () {
       properties:   updateProperties
     });
 
-    mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
+    getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
 
     barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
       update.download(update.file).then(function(file) {
         done('Download should fail');
       }).catch(function (err) {
-        expect(err).to.be.a('string');
-        expect(err).to.equals(expectedErrorMessage);
+        expect(err).to.be.a('object');
+        expect(err).to.have.property('type', 'DELETE_FILE_FAILED');
+        expect(err).to.have.property('message', expectedErrorMessage);
+        done();
+      });
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+
+  it('Should throw a "CHECKSUM_VERIFICATION_FAILED" exception when the md5 check fail', function (done) {
+    var expectedErrorMessage = 'Checksum don\'t match';
+    getCheckUpdateEntrypoint().reply(200, {
+      versionId:    UPDATE_VERSION_ID,
+      packageInfo:  packageInfo,
+      properties:   updateProperties
+    });
+
+    getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
+        done('Download should fail');
+      }).catch(function (err) {
+        expect(err).to.be.a('object');
+        expect(err).to.have.property('type', 'CHECKSUM_VERIFICATION_FAILED');
+        expect(err).to.have.property('message', expectedErrorMessage);
+        done();
+      });
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+
+  it('Should throw a "MD5_HASH_CREATION_FAILED" exception when the md5 creation fail', function (done) {
+    var errorMessage = 'error creating md5 of file ';
+    var expectedErrorMessage = errorMessage + DOWNLOAD_FILE_PATH;
+    md5File = function(file) {
+      return Promise.reject(errorMessage + file);
+    };
+
+    getCheckUpdateEntrypoint().reply(200, {
+      versionId:    UPDATE_VERSION_ID,
+      packageInfo:  packageInfo,
+      properties:   updateProperties
+    });
+
+    getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
+        done('Download should fail');
+      }).catch(function (err) {
+        expect(err).to.be.a('object');
+        expect(err).to.have.property('type', 'MD5_HASH_CREATION_FAILED');
+        expect(err).to.have.property('message', expectedErrorMessage);
         done();
       });
     }).catch(function (err) {
