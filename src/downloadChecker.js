@@ -1,9 +1,9 @@
 var fs = require('fs');
 var md5File = require('md5-file/promise');
 
-var DELETE_FILE_ERROR_CODE            = 'DELETE_FILE_ERROR';
-var CHECKSUM_VERIFICATION_FAILED_CODE = 'CHECKSUM_VERIFICATION_FAILED';
-var MD5_HASH_CREATION_FAILED_CODE     = 'MD5_HASH_CREATION_FAILED';
+var ERROR_DELETE_FILE_FAILED            = 'DELETE_FILE_FAILED';
+var ERROR_CHECKSUM_VERIFICATION_FAILED  = 'CHECKSUM_VERIFICATION_FAILED';
+var ERROR_MD5_HASH_CREATION_FAILED      = 'MD5_HASH_CREATION_FAILED';
 
 module.exports = {
   check: function (file, validSum) {
@@ -15,19 +15,19 @@ module.exports = {
           fs.unlink(file, function (err) {
             if (err) {
               reject({
-                type: DELETE_FILE_ERROR_CODE,
-                message: 'Error when removing file ' + file + ': ' + err 
+                type: ERROR_DELETE_FILE_FAILED,
+                message: 'Error when removing file ' + file + ': ' + err
               });
             }
           });
           reject({
-            type: CHECKSUM_VERIFICATION_FAILED_CODE,
+            type: ERROR_CHECKSUM_VERIFICATION_FAILED,
             message: 'Checksum don\'t match'
           });
         }
       }).catch(function (err) {
         reject({
-          type: MD5_HASH_CREATION_FAILED_CODE,
+          type: ERROR_MD5_HASH_CREATION_FAILED,
           message: err
         });
       });
