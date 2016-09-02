@@ -322,4 +322,20 @@ describe('Check for an update : ', function () {
     });
   });
 
+
+  it('Should throw a "UNEXPECTED_SERVER_RESPONSE" exception when ', function (done) {
+    var errorMessage = 'Error message';
+
+    getCheckUpdateEntrypoint().reply(301, errorMessage);
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      done('Check update should fail');
+    }).catch(function (err) {
+      expect(err).to.be.a('object');
+      expect(err).to.have.property('type', 'UNEXPECTED_SERVER_RESPONSE');
+      expect(err).to.have.property('message', errorMessage);
+      done();
+    });
+  });
+
 });
