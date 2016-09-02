@@ -34,6 +34,8 @@ var mockedServer;
 var mockedCDNServer;
 var barracks;
 var updateProperties;
+var packageInfo;
+var update;
 
 proxyfyModules();
 
@@ -90,25 +92,27 @@ beforeEach(function () {
     md5:  MOCK_FILE_MD5_HASH,
     size: MOCK_FILE_SIZE
   };
+
+  update = {
+    versionId:        UPDATE_VERSION_ID,
+    packageInfo:      packageInfo,
+    customUpdateData: updateProperties
+  };
 });
 
 describe('Check for an update : ', function () {
 
   it('Should return an update when one is available', function (done) {
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     barracks.checkUpdate(CURRENT_VERSION_ID).then(function (update) {
       expect(update).to.be.a('object');
       expect(update).to.have.property('versionId');
       expect(update.versionId).to.equals(UPDATE_VERSION_ID);
 
-      expect(update).to.have.property('properties');
-      expect(update.properties).to.be.a('object');
-      expect(update.properties).to.have.property('jsonkey', updateProperties.jsonkey);
+      expect(update).to.have.property('customUpdateData');
+      expect(update.customUpdateData).to.be.a('object');
+      expect(update.customUpdateData).to.have.property('jsonkey', updateProperties.jsonkey);
 
       expect(update).to.have.property('packageInfo');
       expect(update.packageInfo).to.be.a('object');
@@ -136,11 +140,7 @@ describe('Check for an update : ', function () {
 
 
   it('Should download the update when the file is valid', function (done) {
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
@@ -160,11 +160,7 @@ describe('Check for an update : ', function () {
 
 
   it('Should check and download the update simultaneously', function (done) {
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
@@ -198,11 +194,7 @@ describe('Check for an update : ', function () {
       customData2: 'custom value 2'
     }
 
-    getCheckUpdateEntrypoint(customClientData).reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint(customClientData).reply(200, update);
 
     barracks.checkUpdate(CURRENT_VERSION_ID, customClientData).then(function (update) {
       done();
@@ -213,11 +205,7 @@ describe('Check for an update : ', function () {
 
 
   it('Should delete the update when the file is corrupted', function (done) {    
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
 
@@ -245,11 +233,7 @@ describe('Check for an update : ', function () {
       callback(errorMessage);
     };
 
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
 
@@ -270,11 +254,7 @@ describe('Check for an update : ', function () {
 
   it('Should throw a "CHECKSUM_VERIFICATION_FAILED" exception when the md5 check fail', function (done) {
     var expectedErrorMessage = 'Checksum don\'t match';
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
 
@@ -300,11 +280,7 @@ describe('Check for an update : ', function () {
       return Promise.reject(errorMessage + file);
     };
 
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
@@ -326,11 +302,7 @@ describe('Check for an update : ', function () {
   it('Should throw a "DOWNLOAD_FAILED" exception when server return http code != 200', function (done) {
     var expectedErrorMessage = 'Serveur replied with HTTP 400';
 
-    getCheckUpdateEntrypoint().reply(200, {
-      versionId:    UPDATE_VERSION_ID,
-      packageInfo:  packageInfo,
-      properties:   updateProperties
-    });
+    getCheckUpdateEntrypoint().reply(200, update);
 
     getDownloadUpdateEntrypoint(UPDATE_ID).reply(400, {
       body: 'Error message'
