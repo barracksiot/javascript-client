@@ -3,9 +3,11 @@ var chai = require('chai');
 var expect = chai.expect;
 var nock = require('nock');
 var fs = require('fs');
-var Barracks = require('../src/index.js');
+var proxyquire =  require('proxyquire');
+
 
 var TEST_DIRECTORY            = __dirname;
+var DOWNLOAD_FILE_PATH        = '/tmp/myUpdate.tmp';
 var BASE_URL                  = 'https://domain.name';
 var CHECK_UPDATE_ENDPOINT     = '/api/device/update/check';
 var DOWNLOAD_UPDATE_ENDPOINT  = '/api/device/update/download/';
@@ -25,8 +27,26 @@ var NOCK_CDN_HEADERS = {
   'Authorization': 'validKey'
 };
 
+var mockedServer;
+var mockedCDNServer;
+var barracks;
+var updateProperties;
+var unlinkMock = function (file, callback) {
+  var fs = require('fs');
+  fs.unlink(file, callback);
+};
 
-beforeEach(function() {
+proxyquire('../src/downloadChecker', {
+  'fs': {
+    unlink: function (file, callback) {
+      unlinkMock(file, callback);
+    }
+  } 
+});
+
+beforeEach(function () {
+  var Barracks = require('../src/index.js');
+
   mockedServer    = nock(BASE_URL, { reqheaders: NOCK_HEADERS });
   mockedCDNServer = nock(BASE_URL, { reqheaders: NOCK_CDN_HEADERS });
 
@@ -34,7 +54,7 @@ beforeEach(function() {
     baseURL:          BASE_URL,
     apiKey:           NOCK_HEADERS.Authorization,
     unitId:           UNIT_ID,
-    downloadFilePath: '/tmp/myUpdate.tmp'
+    downloadFilePath: DOWNLOAD_FILE_PATH
   });
 
   updateProperties = { jsonkey: 'value' };
@@ -42,6 +62,13 @@ beforeEach(function() {
     url:  BASE_URL + DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID,
     md5:  MOCK_FILE_MD5_HASH,
     size: MOCK_FILE_SIZE
+  };
+});
+
+afterEach(function () {
+  unlinkMock = function (file, callback) {
+    var fs = require('fs');
+    fs.unlink(file, callback);
   };
 });
 
@@ -105,8 +132,8 @@ describe('Check for an update : ', function () {
 
     mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
-    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update){
-      update.download(update.file).then(function(file){
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
         var mockFileContent = fs.readFileSync(MOCK_FILE_PATH).toString();
         var downloadedFileContent = fs.readFileSync(file).toString();
         expect(downloadedFileContent).to.equal(mockFileContent);
@@ -149,8 +176,8 @@ describe('Check for an update : ', function () {
 
     mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
 
-    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update){
-      update.download(update.file).then(function(file){
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
         done('MD5 should not match');
       }).catch(function (err) {
         expect(err).to.not.equal(undefined);
@@ -171,7 +198,7 @@ describe('Check for an update : ', function () {
       body: 'Error message'
     });
 
-    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update){
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
       done('Should be an error');
     }).catch(function (err) {
       done();
@@ -196,6 +223,34 @@ describe('Check for an update : ', function () {
     }).catch(function (err) {
       done(err);
     });
+  });
 
+
+  it('Should throw an exception when the file deletion failed', function (done) {
+    var errorMessage = 'error deleting file';
+    var expectedErrorMessage = 'Error when removing file ' + DOWNLOAD_FILE_PATH + ': ' + errorMessage;
+    unlinkMock = function (file, callback) {
+      callback(errorMessage);
+    };
+
+    getCheckUpdateEntrypoint().reply(200, {
+      versionId:    UPDATE_VERSION_ID,
+      packageInfo:  packageInfo,
+      properties:   updateProperties
+    });
+
+    mockedCDNServer.get(DOWNLOAD_UPDATE_ENDPOINT + UPDATE_ID).replyWithFile(200, CORRUPT_MOCK_FILE_PATH);
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      update.download(update.file).then(function(file) {
+        done('Download should fail');
+      }).catch(function (err) {
+        expect(err).to.be.a('string');
+        expect(err).to.equals(expectedErrorMessage);
+        done();
+      });
+    }).catch(function (err) {
+      done(err);
+    });
   });
 });
