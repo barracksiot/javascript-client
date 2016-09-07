@@ -51,10 +51,10 @@ function Barracks(options) {
   };
 }
 
-Barracks.prototype.checkUpdateAndDownload = function (versionId, customData) {
+Barracks.prototype.checkUpdateAndDownload = function (versionId, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
-    that.checkUpdate(versionId, customData).then(function (update) {
+    that.checkUpdate(versionId, customClientData).then(function (update) {
       if (update) {
         update.download().then(function (file) {
           resolve(file);
@@ -70,7 +70,7 @@ Barracks.prototype.checkUpdateAndDownload = function (versionId, customData) {
   });
 };
 
-Barracks.prototype.checkUpdate = function (versionId, customData) {
+Barracks.prototype.checkUpdate = function (versionId, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
     var requestOptions = {
@@ -83,7 +83,7 @@ Barracks.prototype.checkUpdate = function (versionId, customData) {
       body: JSON.stringify({
         unitId: that.options.unitId,
         versionId: versionId,
-        customClientData: customData
+        customClientData: customClientData
       })
     };
 

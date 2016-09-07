@@ -13,17 +13,17 @@ $ npm install barracks
 
 Create a Barracks SDK instance:
 ```js
-var Barracks = require("barracks");
+var Barracks = require('barracks');
 
 var barracks = new Barracks({
-  apiKey: "7657657AE76567CD6757EF",
-  unitId: "My unique device identifier"
+  apiKey: '7657657AE76567CD6757EF',
+  unitId: 'The unique device identifier'
 });
 ```
 
 Check for an update:
 ```js
-barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
+barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
   if (update) {
     // Do something with the update
   } else {
@@ -37,7 +37,7 @@ barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
 
 Check for an update and download it:
 ```js
-barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
+barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
   if (update) {
     return update.download();
   }
@@ -53,7 +53,7 @@ barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
 
 Check for an update and download it without chaining the Promises:
 ```js
-barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
+barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
   if (update) {
     update.download().then(function (file) {
       // Do something with the file
@@ -68,7 +68,7 @@ barracks.checkUpdate(currentDeviceVersion, customData).then(function (update) {
 
 Check for an update and download it with a single function:
 ```js
-barracks.checkUpdateAndDownload(currentDeviceVersion, customData).then(function (file) {
+barracks.checkUpdateAndDownload(currentDeviceVersion, customClientData).then(function (file) {
   // Do something with the file
 }).catch(function (err) {
   // Do something with the error
