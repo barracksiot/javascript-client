@@ -338,4 +338,20 @@ describe('Check for an update : ', function () {
     });
   });
 
+
+  it('Should throw a "REQUEST_FAILED" exception when ', function (done) {
+    var errorMessage = 'Something awful happened';
+    var expectedErrorMessage = 'Check Update request failed: ' + errorMessage;
+    getCheckUpdateEntrypoint().replyWithError(errorMessage);
+
+    barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
+      done('Check update should fail');
+    }).catch(function (err) {
+      expect(err).to.be.a('object');
+      expect(err).to.have.property('type', 'REQUEST_FAILED');
+      expect(err).to.have.property('message', expectedErrorMessage);
+      expect(err).to.have.property('requestError');
+      done();
+    });
+  });
 });

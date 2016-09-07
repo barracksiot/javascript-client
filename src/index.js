@@ -91,7 +91,8 @@ Barracks.prototype.checkUpdate = function (versionId, customData) {
       if (error) {
         reject({
           type: ERROR_REQUEST_FAILED,
-          message: error
+          requestError: error,
+          message: 'Check Update request failed: ' + error.message
         });
       } else {
         if (response.statusCode === 204) {
