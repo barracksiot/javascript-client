@@ -87,6 +87,7 @@ All errors returned by the SDK follow the same object format:
 ```
 
 Error type can be one of the the following:
+
 * `REQUEST_FAILED`, is returned by both `Barracks.checkUpdate()` and `Barracks.checkUpdateAndDownload()` methods if the check update request fails. The error object also contains one additional property `requestError` that is the `Error` object returned by the [request](https://www.npmjs.com/package/request) library.
 * `UNEXPECTED_SERVER_RESPONSE`, is returned by both `Barracks.checkUpdate()` and `Barracks.checkUpdateAndDownload()` methods if the HTTP response code is not `200` (a new update is available) or `204` (no update available).
 * `DOWNLOAD_FAILED`, is returned by both `Update.download()` and `Barracks.checkUpdateAndDownload()` methods if the download of an update package fails.
