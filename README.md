@@ -11,7 +11,7 @@ $ npm install barracks
 
 ## Usage
 
-Create a Barracks SDK instance:
+### Create a Barracks SDK instance:
 ```js
 var Barracks = require('barracks');
 
@@ -22,7 +22,8 @@ var barracks = new Barracks({
 ```
 Your user api key you can be found on the Account page of the [Barracks application](https://app.barracks.io/).
 
-Check for an update:
+
+### Check for an update:
 ```js
 barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
   if (update) {
@@ -36,7 +37,7 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
 ```
 
 
-Check for an update and download it:
+### Check for an update and download it:
 ```js
 barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
   if (update) {
@@ -52,7 +53,8 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
 });
 ```
 
-Check for an update and download it without chaining the Promises:
+
+### Check for an update and download it without chaining the Promises:
 ```js
 barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
   if (update) {
@@ -67,7 +69,8 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
 });
 ```
 
-Check for an update and download it with a single function:
+
+### Check for an update and download it with a single function:
 ```js
 barracks.checkUpdateAndDownload(currentDeviceVersion, customClientData).then(function (file) {
   // Do something with the file
@@ -75,6 +78,7 @@ barracks.checkUpdateAndDownload(currentDeviceVersion, customClientData).then(fun
   // Do something with the error (See error handling section)
 });
 ```
+
 
 ## Error Handling
 
