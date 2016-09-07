@@ -16,10 +16,11 @@ Create a Barracks SDK instance:
 var Barracks = require('barracks');
 
 var barracks = new Barracks({
-  apiKey: '7657657AE76567CD6757EF',
+  apiKey: 'Your user API key',
   unitId: 'The unique device identifier'
 });
 ```
+Your user api key you can be found on the Account page of the [Barracks application](https://app.barracks.io/).
 
 Check for an update:
 ```js
@@ -30,7 +31,7 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
     // Do something when no updates are available
   }
 }).catch(function (err) {
-  // Do something with the error
+  // Do something with the error (See error handling section)
 });
 ```
 
@@ -47,7 +48,7 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
     // Do something with the file
   }
 }).catch(function (err) {
-  // Do something with the error
+  // Do something with the error (See error handling section)
 });
 ```
 
@@ -62,7 +63,7 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
     });
   }
 }).catch(function (err) {
-  // Do something with the check error
+  // Do something with the error (See error handling section)
 });
 ```
 
@@ -71,7 +72,7 @@ Check for an update and download it with a single function:
 barracks.checkUpdateAndDownload(currentDeviceVersion, customClientData).then(function (file) {
   // Do something with the file
 }).catch(function (err) {
-  // Do something with the error
+  // Do something with the error (See error handling section)
 });
 ```
 
