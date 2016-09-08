@@ -146,7 +146,9 @@ describe('Check for an update : ', function () {
 
     barracks.checkUpdate(CURRENT_VERSION_ID).then(function(update) {
       update.download(update.file).then(function(file) {
-        var mockFileContent = fs.readFileSync(MOCK_FILE_PATH).toString();
+        expect(fs.existsSync(barracks.options.downloadFilePath)).to.be.true;
+
+        var mockFileContent = fs.readFileSync(barracks.options.downloadFilePath).toString();
         var downloadedFileContent = fs.readFileSync(file).toString();
         expect(downloadedFileContent).to.equal(mockFileContent);
         done();
@@ -165,7 +167,9 @@ describe('Check for an update : ', function () {
     getDownloadUpdateEntrypoint(UPDATE_ID).replyWithFile(200, MOCK_FILE_PATH);
 
     barracks.checkUpdateAndDownload(CURRENT_VERSION_ID).then(function (file) {
-      var mockFileContent = fs.readFileSync(MOCK_FILE_PATH).toString();
+      expect(fs.existsSync(barracks.options.downloadFilePath)).to.be.true;
+
+      var mockFileContent = fs.readFileSync(barracks.options.downloadFilePath).toString();
       var downloadedFileContent = fs.readFileSync(file).toString();
       expect(downloadedFileContent).to.equal(mockFileContent);
       done();
@@ -215,10 +219,8 @@ describe('Check for an update : ', function () {
       }).catch(function (err) {
         expect(err).to.not.equal(undefined);
         expect(barracks.options.downloadFilePath).to.be.a('string');
-        fs.exists(barracks.options.downloadFilePath, function (exists) {
-          expect(exists).to.equal(false);
-          done();
-        });
+        expect(fs.existsSync(barracks.options.downloadFilePath)).to.be.false;
+        done();
       });
     }).catch(function (err) {
       done(err);
@@ -241,6 +243,7 @@ describe('Check for an update : ', function () {
       update.download(update.file).then(function(file) {
         done('Download should fail');
       }).catch(function (err) {
+        expect(fs.existsSync(barracks.options.downloadFilePath)).to.be.true;
         expect(err).to.be.a('object');
         expect(err).to.have.property('type', 'DELETE_FILE_FAILED');
         expect(err).to.have.property('message', expectedErrorMessage);
@@ -262,6 +265,7 @@ describe('Check for an update : ', function () {
       update.download(update.file).then(function(file) {
         done('Download should fail');
       }).catch(function (err) {
+        expect(fs.existsSync(barracks.options.downloadFilePath)).to.be.false;
         expect(err).to.be.a('object');
         expect(err).to.have.property('type', 'CHECKSUM_VERIFICATION_FAILED');
         expect(err).to.have.property('message', expectedErrorMessage);
@@ -288,6 +292,7 @@ describe('Check for an update : ', function () {
       update.download(update.file).then(function(file) {
         done('Download should fail');
       }).catch(function (err) {
+        expect(fs.existsSync(barracks.options.downloadFilePath)).to.be.false;
         expect(err).to.be.a('object');
         expect(err).to.have.property('type', 'MD5_HASH_CREATION_FAILED');
         expect(err).to.have.property('message', expectedErrorMessage);
