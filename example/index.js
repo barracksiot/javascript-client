@@ -13,8 +13,14 @@ process.argv.forEach(function (val, index, array) {
  ** but it can be changed for your own subdomain for example. See the Barracks        **
  ** documentation for more information.                                               **/
 var barracksBaseUrl = args.baseUrl;
-/** apiKey is your user api key that you can find on the  **/
 var barracksApiKey = args.apiKey;
+
+if (!apiKey) {
+  console.log('Argument --apiKey <API_KEY> is mandatory.');
+  console.log('<API_KEY> is your user api key that you can find on the Account page of Barracks.');
+  console.log('You can also use the argument --baseUrl <BARRACKS_URL> if you want to request another domain than the default one.');
+  exit();
+}
 
 var device = {
   versionId: 'v0.0.0',
@@ -25,9 +31,8 @@ var barracks = new Barracks({
   baseURL: barracksBaseUrl,
   apiKey: barracksApiKey,
   unitId: device.unitId,
-  downloadDir: '/tmp/files'
+  downloadFilePath: '/tmp/file.tmp'
 });
-
 
 function waitAndDisplayUpdate() {
   setTimeout(function () {
@@ -35,7 +40,7 @@ function waitAndDisplayUpdate() {
       if (update) {
         console.log('A new update is available!');
         console.log('Version: ' + update.versionId);
-        console.log('Properties: ' + JSON.stringify(update.properties));
+        console.log('Custom Update Data: ' + JSON.stringify(update.customUpdateData));          
         return update.download().then(function (file) {
           console.log("Download");
           fs.readFile(file, 'utf8', function (err, data) {
@@ -43,7 +48,7 @@ function waitAndDisplayUpdate() {
               console.err('Error when reading file: ' + err);
               waitAndDisplayUpdate();
             } else {
-              //device.versionId = update.versionId;
+              device.versionId = update.versionId;
               fs.unlink(file, function (err) {
                 if (err) {
                   console.error('Error when removing file: ' + err);
@@ -58,7 +63,7 @@ function waitAndDisplayUpdate() {
           console.log(err);
         });
       } else {
-        console.log("No updates available");
+        console.log('No updates available');
         waitAndDisplayUpdate();
       }
     }).catch(function (err) {

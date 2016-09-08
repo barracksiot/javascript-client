@@ -18,6 +18,7 @@
     "grunt-mocha-test": "~0.12.7",
     "mocha": "~2.3.4",
     "nock": "^8.0.0",
+    "proxyquire": "^1.7.10",
     "request-debug": "^0.2.0"
   },
   "dependencies": {
