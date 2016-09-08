@@ -1,5 +1,6 @@
 'use strict';
 
+// Allow Node.js to make requests to a server that uses self-signed certificate
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
