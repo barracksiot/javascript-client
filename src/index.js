@@ -30,7 +30,7 @@ function download(update, options) {
       if (response.statusCode != 200) {
         reject({
           type: ERROR_DOWNLOAD_FAILED,
-          message: 'Serveur replied with HTTP ' + response.statusCode
+          message: 'Server replied with HTTP ' + response.statusCode
         });
       }
     }).pipe(fs.createWriteStream(file)).on('close', function () {
