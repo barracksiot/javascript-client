@@ -305,7 +305,7 @@ describe('Check for an update : ', function () {
 
 
   it('Should throw a "DOWNLOAD_FAILED" exception when server return http code != 200', function (done) {
-    var expectedErrorMessage = 'Serveur replied with HTTP 400';
+    var expectedErrorMessage = 'Server replied with HTTP 400';
 
     getCheckUpdateEntrypoint().reply(200, update);
 
