@@ -1,5 +1,5 @@
 {
-  "name": "barracks-js-sdk",
+  "name": "barracks-sdk",
   "version": "0.0.1",
   "build": 0,
   "description": "Barracks SDK node module",
@@ -7,6 +7,28 @@
   "scripts": {
     "test": "mocha ./tests/test.js"
   },
+  "contributors": [
+    {
+      "email": "brice@barracks.io",
+      "name": "Brice Argenson"
+    },
+    {
+      "email": "gregoire@barracks.io",
+      "name": "Grégoire Weber"
+    },
+    {
+      "email": "paul@barracks.io",
+      "name": "Paul Aigeperse"
+    },
+    {
+      "email": "pierre-olivier@barracks.io",
+      "name": "Pierre-Olivier Dybman"
+    },
+    {
+      "email": "simon@barracks.io",
+      "name": "Simon Guerout"
+    }
+  ],
   "devDependencies": {
     "chai": "~3.4.1",
     "chai-fs": "^0.1.0",
@@ -24,5 +46,9 @@
   "dependencies": {
     "md5-file": "^3.1.1",
     "request": "^2.74.0"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/barracksiot/javascript-client"
   }
 }
