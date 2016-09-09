@@ -15,11 +15,11 @@ process.argv.forEach(function (val, index, array) {
 var barracksBaseUrl = args.baseUrl;
 var barracksApiKey = args.apiKey;
 
-if (!apiKey) {
+if (!barracksApiKey) {
   console.log('Argument --apiKey <API_KEY> is mandatory.');
   console.log('<API_KEY> is your user api key that you can find on the Account page of Barracks.');
   console.log('You can also use the argument --baseUrl <BARRACKS_URL> if you want to request another domain than the default one.');
-  exit();
+  process.exit();
 }
 
 var device = {
