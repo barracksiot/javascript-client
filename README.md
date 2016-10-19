@@ -1,4 +1,4 @@
-![001501-cloud-location-1.png](https://bitbucket.org/repo/yLK99j/images/4081600440-001501-cloud-location-1.png)
+![Barracks logo](https://barracks.io/wp-content/uploads/2016/09/barracks_logo_green.png)
 
 # Barracks SDK for JavaScript
 The JavaScript SDK to interact with the [Barracks](https://barracks.io/) API
@@ -6,14 +6,14 @@ The JavaScript SDK to interact with the [Barracks](https://barracks.io/) API
 ## Installation
 
 ```bash
-$ npm install barracks
+$ npm install barracks-sdk
 ```
 
 ## Usage
 
 ### Create a Barracks SDK instance:
 ```js
-var Barracks = require('barracks');
+var Barracks = require('barracks-sdk');
 
 var barracks = new Barracks({
   apiKey: 'Your user API key',
