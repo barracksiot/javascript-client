@@ -24,7 +24,7 @@ if (!barracksApiKey) {
 
 var device = {
   versionId: 'v0.0.0',
-  unitId: 'unit8'
+  unitId: 'unit9'
 };
 
 var barracks = new Barracks({
@@ -36,7 +36,7 @@ var barracks = new Barracks({
 
 function waitAndDisplayUpdate() {
   setTimeout(function () {
-    barracks.checkUpdate(device.versionId).then(function (update) {
+    barracks.checkUpdate(device.versionId, { gender: 'Female' }).then(function (update) {
       if (update) {
         console.log('A new update is available!');
         console.log('Version: ' + update.versionId);

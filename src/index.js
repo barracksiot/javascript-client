@@ -11,6 +11,7 @@ var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
 var CHECK_UPDATE_ENDPOINT       = '/api/device/update/check';
 var DEFAULT_DOWNLOAD_FILE_PATH  = '/tmp/update.tmp';
 
+require('./polyfill');
 var request = require('request');
 var downloadChecker = require('./downloadChecker');
 var fs = require('fs');
