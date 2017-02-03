@@ -2,7 +2,7 @@ var fs = require('fs');
 var Barracks = require('../src/index.js');
 
 var args = {};
-process.argv.forEach(function (val, index, array) {
+process.argv.forEach(function (val, index) {
   if (index >= 2 && index % 2 === 0) {
     var argName = val.substr(2);
     args[argName] = process.argv[index + 1];
@@ -42,8 +42,8 @@ function waitAndDisplayUpdate() {
         console.log('Version: ' + update.versionId);
         console.log('Custom Update Data: ' + JSON.stringify(update.customUpdateData));          
         return update.download().then(function (file) {
-          console.log("Download");
-          fs.readFile(file, 'utf8', function (err, data) {
+          console.log('Download');
+          fs.readFile(file, 'utf8', function (err) {
             if (err) {
               console.err('Error when reading file: ' + err);
               waitAndDisplayUpdate();

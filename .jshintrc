@@ -1,0 +1,13 @@
+{
+  "esversion": 5,
+  "maxcomplexity": 4,
+  "maxparams": 5,
+  "maxstatements": 8,
+  "undef": true,
+  "unused": true,
+  "quotmark": "single",
+  "node": true,
+  "globals": {
+    "Promise": true
+  }
+}

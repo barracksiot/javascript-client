@@ -27,7 +27,7 @@ function download(update, options) {
       }
     };
     var file = options.downloadFilePath;
-    var req = request(downloadParams).on('response', function (response) {
+    request(downloadParams).on('response', function (response) {
       if (response.statusCode != 200) {
         reject({
           type: ERROR_DOWNLOAD_FAILED,
@@ -96,22 +96,20 @@ Barracks.prototype.checkUpdate = function (versionId, customClientData) {
           requestError: error,
           message: 'Check Update request failed: ' + error.message
         });
+      } else if (response.statusCode === 204) {
+        resolve();
+      } else if (response.statusCode == 200) {
+        var update = Object.assign({}, JSON.parse(body), {
+          download: function () {
+            return download(update, that.options);
+          }
+        });
+        resolve(update);
       } else {
-        if (response.statusCode === 204) {
-          resolve();
-        } else if (response.statusCode == 200) {
-          var update = Object.assign({}, JSON.parse(body), {
-            download: function () {
-              return download(update, that.options);
-            }
-          });
-          resolve(update);
-        } else {
-          reject({
-            type: ERROR_UNEXPECTED_SERVER_RESPONSE,
-            message: body
-          });
-        }
+        reject({
+          type: ERROR_UNEXPECTED_SERVER_RESPONSE,
+          message: body
+        });
       }
     });
   });

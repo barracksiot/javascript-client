@@ -5,7 +5,11 @@
   "description": "Barracks SDK node module",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha ./tests/test.js"
+    "lint": "jshint **/**.js",
+    "test": "npm run lint && npm run coverage && npm run check-coverage",
+    "coverage": "DEBUG=true istanbul cover ./node_modules/mocha/bin/_mocha tests/test.js -- -R spec",
+    "check-coverage": "istanbul check-coverage --statement 80 --branch 60 --function 85",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "contributors": [
     {
@@ -30,26 +34,29 @@
     }
   ],
   "devDependencies": {
-    "chai": "~1.10.0",
-    "chai-fs": "^0.1.0",
-    "chai-http": "~1.0.0",
-    "debug": "^2.2.0",
-    "grunt": "~0.4.5",
-    "grunt-contrib-jshint": "^0.11.3",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-mocha-test": "~0.12.7",
-    "mocha": "~2.3.4",
-    "nock": "^8.0.0",
-    "proxyquire": "^1.7.10",
-    "request-debug": "^0.2.0"
+    "chai": "1.10.0",
+    "chai-fs": "0.1.0",
+    "chai-http": "1.0.0",
+    "coveralls": "2.11.15",
+    "debug": "2.2.0",
+    "grunt": "0.4.5",
+    "grunt-contrib-jshint": "0.11.3",
+    "grunt-contrib-watch": "0.6.1",
+    "grunt-mocha-test": "0.12.7",
+    "istanbul": "0.4.5",
+    "jshint": "2.9.4",
+    "mocha": "2.3.4",
+    "nock": "8.0.0",
+    "proxyquire": "1.7.10",
+    "request-debug": "0.2.0"
   },
   "dependencies": {
-    "es6-promise": "^4.0.5",
-    "md5-file": "^3.1.1",
-    "request": "^2.74.0"
+    "es6-promise": "4.0.5",
+    "md5-file": "3.1.1",
+    "request": "2.74.0"
   },
-  "engines" : {
-    "node" : ">=0.10 <7.0"
+  "engines": {
+    "node": ">=0.10 <7.0"
   },
   "repository": {
     "type": "git",
