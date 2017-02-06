@@ -29,7 +29,7 @@
       "name": "Simon Guerout"
     }
   ],
-  "license": "Apache License, Version 2.0",
+  "license": "Apache-2.0",
   "devDependencies": {
     "chai": "~1.10.0",
     "chai-fs": "^0.1.0",
