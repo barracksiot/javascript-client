@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/barracksiot/javascript-client.svg?branch=master)](https://travis-ci.org/barracksiot/javascript-client) [![Coverage Status](https://coveralls.io/repos/github/barracksiot/javascript-client/badge.svg?branch=master)](https://coveralls.io/github/barracksiot/javascript-client?branch=master) [![npm version](https://badge.fury.io/js/barracks-sdk.svg)](https://badge.fury.io/js/barracks-sdk)
+
 ![Barracks logo](https://barracks.io/wp-content/uploads/2016/09/barracks_logo_green.png)
 
 # Barracks SDK for JavaScript
