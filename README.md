@@ -14,6 +14,9 @@ $ npm install barracks-sdk
 ## Usage
 
 ### Create a Barracks SDK instance:
+Get your user api key from the Account page of the [Barracks application](https://app.barracks.io/account).
+
+#### Basic Barracks SDK instance :
 ```js
 var Barracks = require('barracks-sdk');
 
@@ -22,65 +25,57 @@ var barracks = new Barracks({
   unitId: 'The unique device identifier'
 });
 ```
-Your user api key you can be found on the Account page of the [Barracks application](https://app.barracks.io/).
 
+#### Custom Barracks SDK instance :
+You can specify two optionnals attributes to the Barracks SDK if you want to use a proxy for your devices.
+With ```baseURL``` you can give the address of your proxy that use use to contact Barracks, and the ```allowSelfSigned``` boolean allow you to have a self signed SSL certificate on your proxy server.
+Default value of ```baseURL``` is ```https://app.barracks.io```.
+Default value of ```allowSelfSigned``` is ```false```.
+
+```js
+var Barracks = require('barracks-sdk');
+
+var barracks = new Barracks({
+  apiKey: 'Your user API key',
+  unitId: 'The unique device identifier',
+  baseURL: 'https://proxy.to.barracks.io',
+  allowSelfSigned: true
+});
+```
 
 ### Check for an update:
 ```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    // Do something with the update
-  } else {
-    // Do something when no updates are available
+var components = [
+  {
+    reference: 'component.1.ref',
+    version: '1.2.3'
+  },
+  {
+    reference: 'component.2.ref',
+    version: '4.5.6'
   }
+];
+
+barracks.checkUpdate(components, customClientData).then(function (componentsInfo) {
+  componentsInfo.available.forEach(function (availableComponent) {
+    // Do something with the newly available components
+  });
+
+  componentsInfo.changed.forEach(function (updatedComponent) {
+    // Do something with the updated components
+  });
+
+  componentsInfo.unchanged.forEach(function (updatedComponent) {
+    // Do something with the unchanged components
+  });
+
+  componentsInfo.unavailable.forEach(function (updatedComponent) {
+    // Do something with the unavailable components
+  });
 }).catch(function (err) {
   // Do something with the error (See error handling section)
 });
 ```
-
-
-### Check for an update and download it:
-```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    return update.download();
-  }
-  return Promise.resolve();
-}).then(function (file) {
-  if (file) {
-    // Do something with the file
-  }
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
-
-
-### Check for an update and download it without chaining the Promises:
-```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    update.download().then(function (file) {
-      // Do something with the file
-    }).catch(function (err) {
-      // Do something with the download error
-    });
-  }
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
-
-
-### Check for an update and download it with a single function:
-```js
-barracks.checkUpdateAndDownload(currentDeviceVersion, customClientData).then(function (file) {
-  // Do something with the file
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
-
 
 ## Error Handling
 
