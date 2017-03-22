@@ -1,7 +1,7 @@
 'use strict';
 
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
-// var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
+
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
@@ -9,35 +9,6 @@ var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
 
 require('./polyfill');
 var request = require('request');
-// var downloadChecker = require('./downloadChecker');
-// var fs = require('fs');
-
-// function download(update, options) {
-//   return new Promise(function (resolve, reject) {
-//     var downloadParams = {
-//       url: update.packageInfo.url,
-//       method: 'GET',
-//       headers: {
-//         Authorization: options.apiKey,
-//       }
-//     };
-//     var file = options.downloadFilePath;
-//     request(downloadParams).on('response', function (response) {
-//       if (response.statusCode != 200) {
-//         reject({
-//           type: ERROR_DOWNLOAD_FAILED,
-//           message: 'Server replied with HTTP ' + response.statusCode
-//         });
-//       }
-//     }).pipe(fs.createWriteStream(file)).on('close', function () {
-//       downloadChecker.check(file, update.packageInfo.md5).then(function () {
-//         resolve(file);
-//       }).catch(function (err) {
-//         reject(err);
-//       });
-//     });
-//   });
-// }
 
 function Barracks(options) {
   this.options = {
