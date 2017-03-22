@@ -1,7 +1,6 @@
 'use strict';
 
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
-
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
@@ -9,6 +8,7 @@ var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
 
 require('./polyfill');
 var request = require('request');
+var clientHelper = require('./clientHelper');
 
 function Barracks(options) {
   this.options = {
@@ -22,7 +22,7 @@ function Barracks(options) {
   }
 }
 
-Barracks.prototype.checkUpdate = function (components, customClientData) {
+Barracks.prototype.checkUpdate = function (packages, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
     var requestOptions = {
@@ -35,7 +35,7 @@ Barracks.prototype.checkUpdate = function (components, customClientData) {
       body: JSON.stringify({
         unitId: that.options.unitId,
         customClientData: customClientData,
-        components: components
+        components: packages
       })
     };
 
@@ -47,7 +47,7 @@ Barracks.prototype.checkUpdate = function (components, customClientData) {
           message: 'Check Update request failed: ' + error.message
         });
       } else if (response.statusCode == 200) {
-        resolve(JSON.parse(body));
+        resolve(clientHelper.buildCheckUpdateResult(JSON.parse(body)));
       } else {
         reject({
           type: ERROR_UNEXPECTED_SERVER_RESPONSE,

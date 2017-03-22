@@ -1,4 +1,4 @@
-/* jshint expr: true */
+/* jshint expr: true, maxstatements: 100 */
 /* global describe, it, beforeEach */
 
 var sinon = require('sinon');
@@ -107,6 +107,7 @@ describe('checkUpdate(components, customClientData) ', function () {
 
   var barracks;
   var requestMock = function () {};
+  var buildCheckUpdateResultMock = function () {};
 
   function getRequestPayloadForComponents(components) {
     return {
@@ -128,6 +129,11 @@ describe('checkUpdate(components, customClientData) ', function () {
     var Barracks = proxyquire('../src/index.js', {
       'request': function (options, callback) {
         return requestMock(options, callback);
+      },
+      './clientHelper': {
+        buildCheckUpdateResult: function (response) {
+          return buildCheckUpdateResultMock(response);
+        }
       }
     });
 
@@ -210,6 +216,11 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
+    var buildCheckUpdateResultSpy = sinon.spy();
+    buildCheckUpdateResultMock = function (response) {
+      buildCheckUpdateResultSpy(response);
+      return response;
+    };
 
     // When / Then
     barracks.checkUpdate(components).then(function (result) {
@@ -219,6 +230,48 @@ describe('checkUpdate(components, customClientData) ', function () {
         getRequestPayloadForComponents(components),
         sinon.match.func
       );
+      expect(buildCheckUpdateResultSpy).to.have.been.calledOnce;
+      expect(buildCheckUpdateResultSpy).to.have.been.calledWithExactly(componentInfo);
+      done();
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('Should return server response when server return 200 OK', function (done) {
+    // Given
+    var componentInfo = {
+      available:[],
+      changed:[],
+      unchanged:[],
+      unavailable:[]
+    };
+    var response = {
+      body: JSON.stringify(componentInfo),
+      statusCode: 200
+    };
+    var components = [ component1, component2 ];
+    var requestSpy = sinon.spy();
+    requestMock = function (options, callback) {
+      requestSpy(options, callback);
+      callback(undefined, response, response.body);
+    };
+    var buildCheckUpdateResultSpy = sinon.spy();
+    buildCheckUpdateResultMock = function (response) {
+      buildCheckUpdateResultSpy(response);
+      return response;
+    };
+
+    // When / Then
+    barracks.checkUpdate(components).then(function (result) {
+      expect(result).to.deep.equals(componentInfo);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly(
+        getRequestPayloadForComponents(components),
+        sinon.match.func
+      );
+      expect(buildCheckUpdateResultSpy).to.have.been.calledOnce;
+      expect(buildCheckUpdateResultSpy).to.have.been.calledWithExactly(componentInfo);
       done();
     }).catch(function (err) {
       done(err);

@@ -45,37 +45,112 @@ var barracks = new Barracks({
 
 ### Check for an update:
 ```js
-var components = [
+var packages = [
   {
-    reference: 'component.1.ref',
+    reference: 'package.1.ref',
     version: '1.2.3'
   },
   {
-    reference: 'component.2.ref',
+    reference: 'package.2.ref',
     version: '4.5.6'
   }
 ];
 
-barracks.checkUpdate(components, customClientData).then(function (componentsInfo) {
-  componentsInfo.available.forEach(function (availableComponent) {
-    // Do something with the newly available components
+barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
+  packagesInfo.available.forEach(function (package) {
+    // Do something with the newly available packages
   });
 
-  componentsInfo.changed.forEach(function (updatedComponent) {
-    // Do something with the updated components
+  packagesInfo.changed.forEach(function (package) {
+    // Do something with the updated packages
   });
 
-  componentsInfo.unchanged.forEach(function (updatedComponent) {
-    // Do something with the unchanged components
+  packagesInfo.unchanged.forEach(function (package) {
+    // Do something with the unchanged packages
   });
 
-  componentsInfo.unavailable.forEach(function (updatedComponent) {
-    // Do something with the unavailable components
+  packagesInfo.unavailable.forEach(function (package) {
+    // Do something with the unavailable packages
   });
 }).catch(function (err) {
   // Do something with the error (See error handling section)
 });
 ```
+
+The ```checkUpdate``` response is always as follow :
+
+```js
+{
+  "available":[
+    // List of packages newly available for the device
+    {
+      "package": "abc.edf",
+      "version": "0.0.1",
+      "url":"https://dtc.io/",
+      "size": 42,
+      "md5":"deadbeefbadc0ffee"
+    }
+  ],
+  "changed":[
+    // List of packages already installed on the device that can be updated
+    {
+      "package": "abc.edf",
+      "version": "0.0.1",
+      "url":"https://dtc.io/",
+      "size": 42,
+      "md5":"deadbeefbadc0ffee"
+    }
+  ],
+  "unchanged":[
+    // List of packages already installed on the device that did not changed
+    {
+      "package": "abc.edf",
+      "version": "0.0.1",
+    }
+  ],
+  "unavailable":[
+    // List of packages already installed on the device that cannot be used by the device anymore
+    {
+      "package": "abc.edf",
+    }
+  ]
+}
+```
+
+<!-- 
+
+### Check for an update and download it:
+```js
+barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
+  if (update) {
+    return update.download();
+  }
+  return Promise.resolve();
+}).then(function (file) {
+  if (file) {
+    // Do something with the file
+  }
+}).catch(function (err) {
+  // Do something with the error (See error handling section)
+});
+```
+
+
+### Check for an update and download it without chaining the Promises:
+```js
+barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
+  if (update) {
+    update.download().then(function (file) {
+      // Do something with the file
+    }).catch(function (err) {
+      // Do something with the download error
+    });
+  }
+}).catch(function (err) {
+  // Do something with the error (See error handling section)
+});
+```
+ -->
 
 ## Error Handling
 
