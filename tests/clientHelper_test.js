@@ -32,12 +32,13 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(0);
-    expect(result.available[0]).to.deep.equals(
-      Object.assign({}, component, {
-        package: component.component,
-        component: undefined
-      })
-    );      
+    expect(result.available[0]).to.deep.equals({
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://dtc.io/',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    });      
   });
 
   it('Should correctly map packages in the changed section', function () {
@@ -65,12 +66,13 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(0);
-    expect(result.changed[0]).to.deep.equals(
-      Object.assign({}, component, {
-        package: component.component,
-        component: undefined
-      })
-    );      
+    expect(result.changed[0]).to.deep.equals({
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://dtc.io/',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    });      
   });
 
   it('Should correctly map packages in the unchanged section', function () {
@@ -95,12 +97,10 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(0);
-    expect(result.unchanged[0]).to.deep.equals(
-      Object.assign({}, component, {
-        package: component.component,
-        component: undefined
-      })
-    );      
+    expect(result.unchanged[0]).to.deep.equals({
+      package: 'abc.edf',
+      version: '0.0.1'
+    });      
   });
 
   it('Should correctly map packages in the unavailable section', function () {
@@ -122,12 +122,7 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(1);
-    expect(result.unavailable[0]).to.deep.equals(
-      Object.assign({}, component, {
-        package: component.component,
-        component: undefined
-      })
-    );
+    expect(result.unavailable[0]).to.deep.equals({ package: 'abc.edf' });
   });
 
   it('Should correctly map packages in all sections', function () {
@@ -167,29 +162,24 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(1);
-    expect(result.available[0]).to.deep.equals(
-      Object.assign({}, availableComponent, {
-        package: availableComponent.component,
-        component: undefined
-      })
-    );
-    expect(result.changed[0]).to.deep.equals(
-      Object.assign({}, changedComponent, {
-        package: changedComponent.component,
-        component: undefined
-      })
-    );
-    expect(result.unchanged[0]).to.deep.equals(
-      Object.assign({}, unchangedComponent, {
-        package: unchangedComponent.component,
-        component: undefined
-      })
-    );
-    expect(result.unavailable[0]).to.deep.equals(
-      Object.assign({}, unavailableComponent, {
-        package: unavailableComponent.component,
-        component: undefined
-      })
-    );
+    expect(result.available[0]).to.deep.equals({
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://dtc.io/',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    });
+    expect(result.changed[0]).to.deep.equals({
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://dtc.io/',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    });
+    expect(result.unchanged[0]).to.deep.equals({
+      package: 'abc.edf',
+      version: '0.0.1'
+    });
+    expect(result.unavailable[0]).to.deep.equals({ package: 'abc.edf' });
   });
 });

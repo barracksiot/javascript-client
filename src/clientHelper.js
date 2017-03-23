@@ -3,10 +3,10 @@ module.exports = {
     var result = {};
     Object.keys(serverResponse).forEach(function (key) {
       result[key] = serverResponse[key].map(function (item) {
-        return Object.assign({}, item, {
-          package: item.component,
-          component: undefined
-        });
+        var result = item;
+        result.package = item.component;
+        delete result.component;
+        return result;
       });
     });
     return result;
