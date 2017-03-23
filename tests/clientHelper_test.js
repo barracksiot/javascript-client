@@ -26,19 +26,20 @@ describe('buildCheckUpdateResult : ', function () {
     // When
     var result = helper.buildCheckUpdateResult(serverResponse);
 
+    console.log(component);
+
     // Then
     expect(result).to.be.an('object');
     expect(result.available).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(0);
-    expect(result.available[0]).to.deep.equals({
-      package: 'abc.edf',
-      version: '0.0.1',
-      url: 'https://dtc.io/',
-      size: 42,
-      md5: 'deadbeefbadc0ffee'
-    });      
+    expect(result.available[0]).to.have.property('package').and.to.be.equals(component.component);
+    expect(result.available[0]).to.have.property('version').and.to.be.equals(component.version);
+    expect(result.available[0]).to.have.property('url').and.to.be.equals(component.url);
+    expect(result.available[0]).to.have.property('size').and.to.be.equals(component.size);
+    expect(result.available[0]).to.have.property('md5').and.to.be.equals(component.md5);
+    expect(result.available[0]).to.have.property('download').and.to.be.a('function');
   });
 
   it('Should correctly map packages in the changed section', function () {
@@ -66,13 +67,12 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(0);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(0);
-    expect(result.changed[0]).to.deep.equals({
-      package: 'abc.edf',
-      version: '0.0.1',
-      url: 'https://dtc.io/',
-      size: 42,
-      md5: 'deadbeefbadc0ffee'
-    });      
+    expect(result.changed[0]).to.have.property('package').and.to.be.equals(component.component);
+    expect(result.changed[0]).to.have.property('version').and.to.be.equals(component.version);
+    expect(result.changed[0]).to.have.property('url').and.to.be.equals(component.url);
+    expect(result.changed[0]).to.have.property('size').and.to.be.equals(component.size);
+    expect(result.changed[0]).to.have.property('md5').and.to.be.equals(component.md5);
+    expect(result.changed[0]).to.have.property('download').and.to.be.a('function');
   });
 
   it('Should correctly map packages in the unchanged section', function () {
@@ -162,20 +162,18 @@ describe('buildCheckUpdateResult : ', function () {
     expect(result.changed).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unchanged).to.be.an('array').and.to.have.lengthOf(1);
     expect(result.unavailable).to.be.an('array').and.to.have.lengthOf(1);
-    expect(result.available[0]).to.deep.equals({
-      package: 'abc.edf',
-      version: '0.0.1',
-      url: 'https://dtc.io/',
-      size: 42,
-      md5: 'deadbeefbadc0ffee'
-    });
-    expect(result.changed[0]).to.deep.equals({
-      package: 'abc.edf',
-      version: '0.0.1',
-      url: 'https://dtc.io/',
-      size: 42,
-      md5: 'deadbeefbadc0ffee'
-    });
+    expect(result.available[0]).to.have.property('package').and.to.be.equals(availableComponent.component);
+    expect(result.available[0]).to.have.property('version').and.to.be.equals(availableComponent.version);
+    expect(result.available[0]).to.have.property('url').and.to.be.equals(availableComponent.url);
+    expect(result.available[0]).to.have.property('size').and.to.be.equals(availableComponent.size);
+    expect(result.available[0]).to.have.property('md5').and.to.be.equals(availableComponent.md5);
+    expect(result.available[0]).to.have.property('download').and.to.be.a('function');
+    expect(result.changed[0]).to.have.property('package').and.to.be.equals(changedComponent.component);
+    expect(result.changed[0]).to.have.property('version').and.to.be.equals(changedComponent.version);
+    expect(result.changed[0]).to.have.property('url').and.to.be.equals(changedComponent.url);
+    expect(result.changed[0]).to.have.property('size').and.to.be.equals(changedComponent.size);
+    expect(result.changed[0]).to.have.property('md5').and.to.be.equals(changedComponent.md5);
+    expect(result.changed[0]).to.have.property('download').and.to.be.a('function');
     expect(result.unchanged[0]).to.deep.equals({
       package: 'abc.edf',
       version: '0.0.1'
