@@ -33,20 +33,26 @@ var barracks = new Barracks({
   downloadFilePath: '/tmp/file.tmp'
 });
 
-function handleResponse(response) {
-  response.available.forEach(function (package) {
+function handleAvailablePackages(packages) {
+  packages.forEach(function (package) {
     console.log('package ' + package.package + ' (version ' + package.version + ') is now available');
   });
+}
 
-  response.changed.forEach(function (package) {
+function handleChangedPackages(packages) {
+  packages.forEach(function (package) {
     console.log('package ' + package.package + ' can be updated to version ' + package.version);
   });
+}
 
-  response.unchanged.forEach(function (package) {
+function handleUnchangedPackages(packages) {
+  packages.forEach(function (package) {
     console.log('package ' + package.package + ' did not change (version' + package.version + ')');
   });
+}
 
-  response.unavailable.forEach(function (package) {
+function handleUnavailablePackages(packages) {
+  packages.forEach(function (package) {
     console.log('package ' + package.package + ' is not available anymore');
   });
 }
@@ -54,7 +60,10 @@ function handleResponse(response) {
 function waitAndDisplayUpdate() {
   setTimeout(function () {
     barracks.checkUpdate(device.versionId, { gender: 'Female' }).then(function (response) {
-      handleResponse(response);
+      handleAvailablePackages(response.available);
+      handleChangedPackages(response.changed);
+      handleUnchangedPackages(response.unchanged);
+      handleUnavailablePackages(response.unavailable);
     }).catch(function (err) {
       console.error('Error when checking for a new update: ', err);
       waitAndDisplayUpdate();
