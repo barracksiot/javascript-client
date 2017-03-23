@@ -1,3 +1,5 @@
+require('es6-promise').polyfill();
+
 var fs = require('fs');
 var md5File = require('md5-file/promise');
 

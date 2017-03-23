@@ -7,6 +7,7 @@ var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
 var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
 
+require('es6-promise').polyfill();
 var fs = require('fs');
 var request = require('request');
 var clientHelper = require('./clientHelper');
