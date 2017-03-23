@@ -11,7 +11,7 @@ require('./polyfill');
 var fs = require('fs');
 var request = require('request');
 var clientHelper = require('./clientHelper');
-var downloadChecker = require('./downloadChecker');
+var fileHelper = require('./fileHelper');
 
 function Barracks(options) {
   this.options = {
@@ -81,12 +81,14 @@ Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
         });
       }
     }).pipe(fileStream).on('close', function () {
-      downloadChecker.check(filePath, packageInfo.md5).then(function () {
+      fileHelper.checkMd5(filePath, packageInfo.md5).then(function () {
         resolve(filePath);
       }).catch(function (err) {
+        fileHelper.deleteFile(filePath, reject);
         reject(err);
       });
     }).on('error', function (err) {
+      fileHelper.deleteFile(filePath, reject);
       reject(err);
     });
   });
