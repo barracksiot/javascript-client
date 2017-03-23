@@ -56,7 +56,7 @@ function waitAndDisplayUpdate() {
     barracks.checkUpdate(device.versionId, { gender: 'Female' }).then(function (response) {
       handleResponse(response);
     }).catch(function (err) {
-      console.error('Error when checking for a new update: ' + err);
+      console.error('Error when checking for a new update: ', err);
       waitAndDisplayUpdate();
     });
   }, 1000);
