@@ -1,78 +1,28 @@
 'use strict';
 
-// Allow Node.js to make requests to a server that uses self-signed certificate
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
-var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var CHECK_UPDATE_ENDPOINT       = '/api/device/update/check';
-var DEFAULT_DOWNLOAD_FILE_PATH  = '/tmp/update.tmp';
+var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
 
 require('./polyfill');
 var request = require('request');
-var downloadChecker = require('./downloadChecker');
-var fs = require('fs');
-
-
-function download(update, options) {
-  return new Promise(function (resolve, reject) {
-    var downloadParams = {
-      url: update.packageInfo.url,
-      method: 'GET',
-      headers: {
-        Authorization: options.apiKey,
-      }
-    };
-    var file = options.downloadFilePath;
-    request(downloadParams).on('response', function (response) {
-      if (response.statusCode != 200) {
-        reject({
-          type: ERROR_DOWNLOAD_FAILED,
-          message: 'Server replied with HTTP ' + response.statusCode
-        });
-      }
-    }).pipe(fs.createWriteStream(file)).on('close', function () {
-      downloadChecker.check(file, update.packageInfo.md5).then(function () {
-        resolve(file);
-      }).catch(function (err) {
-        reject(err);
-      });
-    });
-  });
-}
+var clientHelper = require('./clientHelper');
 
 function Barracks(options) {
   this.options = {
     baseURL: options.baseURL || DEFAULT_BARRACKS_BASE_URL,
     apiKey: options.apiKey,
-    unitId: options.unitId,
-    downloadFilePath: options.downloadFilePath || DEFAULT_DOWNLOAD_FILE_PATH
+    unitId: options.unitId
   };
+
+  if (options.allowSelfSigned && options.allowSelfSigned === true) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  }
 }
 
-Barracks.prototype.checkUpdateAndDownload = function (versionId, customClientData) {
-  var that = this;
-  return new Promise(function (resolve, reject) {
-    that.checkUpdate(versionId, customClientData).then(function (update) {
-      if (update) {
-        update.download().then(function (file) {
-          resolve(file);
-        }).catch(function (err) {
-          reject(err);
-        });
-      } else {
-        resolve();
-      }
-    }).catch(function (err) {
-      reject(err);
-    });
-  });
-};
-
-Barracks.prototype.checkUpdate = function (versionId, customClientData) {
+Barracks.prototype.checkUpdate = function (packages, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
     var requestOptions = {
@@ -84,8 +34,8 @@ Barracks.prototype.checkUpdate = function (versionId, customClientData) {
       },
       body: JSON.stringify({
         unitId: that.options.unitId,
-        versionId: versionId,
-        customClientData: customClientData
+        customClientData: customClientData,
+        components: packages
       })
     };
 
@@ -96,15 +46,8 @@ Barracks.prototype.checkUpdate = function (versionId, customClientData) {
           requestError: error,
           message: 'Check Update request failed: ' + error.message
         });
-      } else if (response.statusCode === 204) {
-        resolve();
       } else if (response.statusCode == 200) {
-        var update = Object.assign({}, JSON.parse(body), {
-          download: function () {
-            return download(update, that.options);
-          }
-        });
-        resolve(update);
+        resolve(clientHelper.buildCheckUpdateResult(JSON.parse(body)));
       } else {
         reject({
           type: ERROR_UNEXPECTED_SERVER_RESPONSE,

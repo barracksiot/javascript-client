@@ -2,7 +2,7 @@
   "esversion": 5,
   "maxcomplexity": 4,
   "maxparams": 5,
-  "maxstatements": 8,
+  "maxstatements": 6,
   "undef": true,
   "unused": true,
   "quotmark": "single",

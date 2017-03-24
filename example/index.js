@@ -1,4 +1,3 @@
-var fs = require('fs');
 var Barracks = require('../src/index.js');
 
 var args = {};
@@ -34,40 +33,39 @@ var barracks = new Barracks({
   downloadFilePath: '/tmp/file.tmp'
 });
 
+function handleAvailablePackages(packages) {
+  packages.forEach(function (package) {
+    console.log('package ' + package.package + ' (version ' + package.version + ') is now available');
+  });
+}
+
+function handleChangedPackages(packages) {
+  packages.forEach(function (package) {
+    console.log('package ' + package.package + ' can be updated to version ' + package.version);
+  });
+}
+
+function handleUnchangedPackages(packages) {
+  packages.forEach(function (package) {
+    console.log('package ' + package.package + ' did not change (version' + package.version + ')');
+  });
+}
+
+function handleUnavailablePackages(packages) {
+  packages.forEach(function (package) {
+    console.log('package ' + package.package + ' is not available anymore');
+  });
+}
+
 function waitAndDisplayUpdate() {
   setTimeout(function () {
-    barracks.checkUpdate(device.versionId, { gender: 'Female' }).then(function (update) {
-      if (update) {
-        console.log('A new update is available!');
-        console.log('Version: ' + update.versionId);
-        console.log('Custom Update Data: ' + JSON.stringify(update.customUpdateData));          
-        return update.download().then(function (file) {
-          console.log('Download');
-          fs.readFile(file, 'utf8', function (err) {
-            if (err) {
-              console.err('Error when reading file: ' + err);
-              waitAndDisplayUpdate();
-            } else {
-              device.versionId = update.versionId;
-              fs.unlink(file, function (err) {
-                if (err) {
-                  console.error('Error when removing file: ' + err);
-                } else {
-                  console.log('Package removed from file system');
-                }
-                waitAndDisplayUpdate();
-              });
-            }
-          });
-        }).catch(function (err) {
-          console.log(err);
-        });
-      } else {
-        console.log('No updates available');
-        waitAndDisplayUpdate();
-      }
+    barracks.checkUpdate(device.versionId, { gender: 'Female' }).then(function (response) {
+      handleAvailablePackages(response.available);
+      handleChangedPackages(response.changed);
+      handleUnchangedPackages(response.unchanged);
+      handleUnavailablePackages(response.unavailable);
     }).catch(function (err) {
-      console.error('Error when checking for a new update: ' + err);
+      console.error('Error when checking for a new update: ', err);
       waitAndDisplayUpdate();
     });
   }, 1000);

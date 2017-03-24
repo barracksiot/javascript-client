@@ -14,6 +14,9 @@ $ npm install barracks-sdk
 ## Usage
 
 ### Create a Barracks SDK instance:
+Get your user api key from the Account page of the [Barracks application](https://app.barracks.io/account).
+
+#### Basic Barracks SDK instance :
 ```js
 var Barracks = require('barracks-sdk');
 
@@ -22,22 +25,99 @@ var barracks = new Barracks({
   unitId: 'The unique device identifier'
 });
 ```
-Your user api key you can be found on the Account page of the [Barracks application](https://app.barracks.io/).
 
+#### Custom Barracks SDK instance :
+You can specify two optionnals attributes to the Barracks SDK if you want to use a proxy for your devices.
+With ```baseURL``` you can give the address of your proxy that use use to contact Barracks, and the ```allowSelfSigned``` boolean allow you to have a self signed SSL certificate on your proxy server.
+Default value of ```baseURL``` is ```https://app.barracks.io```.
+Default value of ```allowSelfSigned``` is ```false```.
+
+```js
+var Barracks = require('barracks-sdk');
+
+var barracks = new Barracks({
+  apiKey: 'Your user API key',
+  unitId: 'The unique device identifier',
+  baseURL: 'https://proxy.to.barracks.io',
+  allowSelfSigned: true
+});
+```
 
 ### Check for an update:
 ```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    // Do something with the update
-  } else {
-    // Do something when no updates are available
+var packages = [
+  {
+    reference: 'package.1.ref',
+    version: '1.2.3'
+  },
+  {
+    reference: 'package.2.ref',
+    version: '4.5.6'
   }
+];
+
+barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
+  packagesInfo.available.forEach(function (package) {
+    // Do something with the newly available packages
+  });
+
+  packagesInfo.changed.forEach(function (package) {
+    // Do something with the updated packages
+  });
+
+  packagesInfo.unchanged.forEach(function (package) {
+    // Do something with the unchanged packages
+  });
+
+  packagesInfo.unavailable.forEach(function (package) {
+    // Do something with the unavailable packages
+  });
 }).catch(function (err) {
   // Do something with the error (See error handling section)
 });
 ```
 
+The ```checkUpdate``` response is always as follow :
+
+```js
+{
+  "available":[
+    // List of packages newly available for the device
+    {
+      "package": "abc.edf",
+      "version": "0.0.1",
+      "url":"https://dtc.io/",
+      "size": 42,
+      "md5":"deadbeefbadc0ffee"
+    }
+  ],
+  "changed":[
+    // List of packages already installed on the device that can be updated
+    {
+      "package": "abc.edf",
+      "version": "0.0.1",
+      "url":"https://dtc.io/",
+      "size": 42,
+      "md5":"deadbeefbadc0ffee"
+    }
+  ],
+  "unchanged":[
+    // List of packages already installed on the device that did not changed
+    {
+      "package": "abc.edf",
+      "version": "0.0.1",
+    }
+  ],
+  "unavailable":[
+    // List of packages already installed on the device that cannot be used by the device anymore
+    {
+      "package": "abc.edf",
+    }
+  ]
+}
+```
+
+<!-- 
 
 ### Check for an update and download it:
 ```js
@@ -70,17 +150,7 @@ barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (upda
   // Do something with the error (See error handling section)
 });
 ```
-
-
-### Check for an update and download it with a single function:
-```js
-barracks.checkUpdateAndDownload(currentDeviceVersion, customClientData).then(function (file) {
-  // Do something with the file
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
-
+ -->
 
 ## Error Handling
 
