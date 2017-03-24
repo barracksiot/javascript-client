@@ -107,11 +107,12 @@ describe('Constructor : ', function () {
 describe('checkUpdate(components, customClientData) ', function () {
 
   var barracks;
+  var resolveComponentsUrl = '/api/device/components/resolve';
   var requestMock = function () {};
 
   function getRequestPayloadForComponents(components) {
     return {
-      url: 'https://app.barracks.io/api/device/v2/update/check',
+      url: 'https://app.barracks.io' + resolveComponentsUrl,
       method: 'POST',
       headers: {
         'Authorization': API_KEY,

@@ -5,7 +5,7 @@ var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
+var CHECK_UPDATE_ENDPOINT       = '/api/device/components/resolve';
 
 require('es6-promise').polyfill();
 var fs = require('fs');
