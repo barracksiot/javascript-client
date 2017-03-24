@@ -33,15 +33,27 @@ var barracks = new Barracks({
   downloadFilePath: '/tmp/file.tmp'
 });
 
+fucntion donwloadPackages(packages) {
+  var promises = packages.map(function (package) {
+    return package.download('/tmp/' + package.package + '_' + package.version + '_' + package.filename);
+  });
+
+  return Promise.all(promises);
+}
+
 function handleAvailablePackages(packages) {
-  packages.forEach(function (package) {
-    console.log('package ' + package.package + ' (version ' + package.version + ') is now available');
+  donwloadPackages(packages).then(function (files) {
+    console.log('new packages ready to install :', files);
+  }).catch(function (err) {
+    console.error('Error while downloading packages', err);
   });
 }
 
 function handleChangedPackages(packages) {
-  packages.forEach(function (package) {
-    console.log('package ' + package.package + ' can be updated to version ' + package.version);
+  donwloadPackages(packages).then(function (files) {
+    console.log('updates ready to install :', files);
+  }).catch(function (err) {
+    console.error('Error while downloading packages', err);
   });
 }
 

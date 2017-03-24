@@ -84,73 +84,77 @@ The ```checkUpdate``` response is always as follow :
   "available":[
     // List of packages newly available for the device
     {
-      "package": "abc.edf",
-      "version": "0.0.1",
-      "url":"https://dtc.io/",
-      "size": 42,
-      "md5":"deadbeefbadc0ffee"
+      package: "abc.edf",
+      version: "0.0.1",
+      url: "https://app.barracks.io/path/to/package/version/",
+      size: 42,
+      md5: "deadbeefbadc0ffee",
+      download: function (filePath) {};
     }
   ],
   "changed":[
     // List of packages already installed on the device that can be updated
     {
-      "package": "abc.edf",
-      "version": "0.0.1",
-      "url":"https://dtc.io/",
-      "size": 42,
-      "md5":"deadbeefbadc0ffee"
+      package: "abc.edf",
+      version: "0.0.1",
+      url: "https://app.barracks.io/path/to/package/version/",
+      size: 42,
+      md5: "deadbeefbadc0ffee",
+      download: function (filePath) {};
     }
   ],
   "unchanged":[
     // List of packages already installed on the device that did not changed
     {
-      "package": "abc.edf",
-      "version": "0.0.1",
+      package: "abc.edf",
+      version: "0.0.1",
     }
   ],
   "unavailable":[
     // List of packages already installed on the device that cannot be used by the device anymore
     {
-      "package": "abc.edf",
+      package: "abc.edf",
     }
   ]
 }
 ```
 
-<!-- 
+Where the ```download(filePath)``` function is a shortcut for ```barracks.downloadPackage(packageInfo, filePath)```, ```filePath``` being the path where the downloaded file is saved on the device.
 
-### Check for an update and download it:
+
+### Download a package
+
+Once you have the response from checkUpdate, you'll be able to download file for all packages that are available for the device (packages that are in the ```available```, and ```changed``` lists of the response).
+
+You have two choices to download the files, both method are showed in the following example.
+First method is to use the download function from the packages object directly.
+Second one is to use the barracks.donwloadPackage() method.
+
 ```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    return update.download();
+var packages = [
+  {
+    reference: 'package.1.ref',
+    version: '1.2.3'
+  },
+  {
+    reference: 'package.2.ref',
+    version: '4.5.6'
   }
-  return Promise.resolve();
-}).then(function (file) {
-  if (file) {
-    // Do something with the file
-  }
+];
+
+barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
+  packagesInfo.available.forEach(function (package) {
+    // Download the files using download
+  });
+
+  packagesInfo.changed.forEach(function (package) {
+    // Do something with the updated packages
+  });
 }).catch(function (err) {
   // Do something with the error (See error handling section)
 });
 ```
 
-
-### Check for an update and download it without chaining the Promises:
-```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    update.download().then(function (file) {
-      // Do something with the file
-    }).catch(function (err) {
-      // Do something with the download error
-    });
-  }
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
- -->
 
 ## Error Handling
 
