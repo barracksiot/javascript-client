@@ -28,7 +28,7 @@ var barracks = new Barracks({
 
 #### Custom Barracks SDK instance :
 You can specify two optionnals attributes to the Barracks SDK if you want to use a proxy for your devices.
-With ```baseURL``` you can give the address of your proxy that use use to contact Barracks, and the ```allowSelfSigned``` boolean allow you to have a self signed SSL certificate on your proxy server.
+With ```baseURL``` you can give the address of your proxy that use to contact Barracks, and the ```allowSelfSigned``` boolean allow you to have a self signed SSL certificate on your proxy server.
 Default value of ```baseURL``` is ```https://app.barracks.io```.
 Default value of ```allowSelfSigned``` is ```false```.
 
@@ -133,9 +133,9 @@ Where the ```download(filePath)``` function is a shortcut for ```barracks.downlo
 
 Once you have the response from checkUpdate, you'll be able to download file for all packages that are available for the device (packages that are in the ```available```, and ```changed``` lists of the response).
 
-You have two choices to download the files, both method are showed in the following example.
-First method is to use the download function from the packages object directly.
-Second one is to use the barracks.donwloadPackage() method.
+As showed in the following example, you can
+* Use the download function from the packages object directly.
+* Use the barracks.donwloadPackage() method.
 
 ```js
 var packages = [
