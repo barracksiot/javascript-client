@@ -108,7 +108,6 @@ describe('checkUpdate(components, customClientData) ', function () {
 
   var barracks;
   var requestMock = function () {};
-  var buildCheckUpdateResultMock = function () {};
 
   function getRequestPayloadForComponents(components) {
     return {
@@ -130,11 +129,6 @@ describe('checkUpdate(components, customClientData) ', function () {
     var Barracks = proxyquire('../src/index.js', {
       'request': function (options, callback) {
         return requestMock(options, callback);
-      },
-      './clientHelper': {
-        buildCheckUpdateResult: function (response) {
-          return buildCheckUpdateResultMock(response);
-        }
       }
     });
 
@@ -217,11 +211,6 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
-    var buildCheckUpdateResultSpy = sinon.spy();
-    buildCheckUpdateResultMock = function (response) {
-      buildCheckUpdateResultSpy(response);
-      return response;
-    };
 
     // When / Then
     barracks.checkUpdate(components).then(function (result) {
@@ -231,8 +220,6 @@ describe('checkUpdate(components, customClientData) ', function () {
         getRequestPayloadForComponents(components),
         sinon.match.func
       );
-      expect(buildCheckUpdateResultSpy).to.have.been.calledOnce;
-      expect(buildCheckUpdateResultSpy).to.have.been.calledWithExactly(componentInfo);
       done();
     }).catch(function (err) {
       done(err);
@@ -257,11 +244,6 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
-    var buildCheckUpdateResultSpy = sinon.spy();
-    buildCheckUpdateResultMock = function (response) {
-      buildCheckUpdateResultSpy(response);
-      return response;
-    };
 
     // When / Then
     barracks.checkUpdate(components).then(function (result) {
@@ -271,8 +253,6 @@ describe('checkUpdate(components, customClientData) ', function () {
         getRequestPayloadForComponents(components),
         sinon.match.func
       );
-      expect(buildCheckUpdateResultSpy).to.have.been.calledOnce;
-      expect(buildCheckUpdateResultSpy).to.have.been.calledWithExactly(componentInfo);
       done();
     }).catch(function (err) {
       done(err);

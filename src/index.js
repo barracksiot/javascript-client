@@ -10,7 +10,6 @@ var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
 require('es6-promise').polyfill();
 var fs = require('fs');
 var request = require('request');
-var clientHelper = require('./clientHelper');
 var fileHelper = require('./fileHelper');
 
 function Barracks(options) {
@@ -50,7 +49,7 @@ Barracks.prototype.checkUpdate = function (packages, customClientData) {
           message: 'Check Update request failed: ' + error.message
         });
       } else if (response.statusCode == 200) {
-        resolve(clientHelper.buildCheckUpdateResult(JSON.parse(body), that));
+        resolve(JSON.parse(body));
       } else {
         reject({
           type: ERROR_UNEXPECTED_SERVER_RESPONSE,

@@ -33,7 +33,7 @@ var barracks = new Barracks({
   downloadFilePath: '/tmp/file.tmp'
 });
 
-fucntion donwloadPackages(packages) {
+function donwloadPackages(packages) {
   var promises = packages.map(function (package) {
     return package.download('/tmp/' + package.package + '_' + package.version + '_' + package.filename);
   });
