@@ -16,7 +16,7 @@ $ npm install barracks-sdk
 ### Create a Barracks SDK instance:
 Get your user api key from the Account page of the [Barracks application](https://app.barracks.io/account).
 
-#### Basic Barracks SDK instance :
+#### Default Barracks SDK instance :
 ```js
 var Barracks = require('barracks-sdk');
 
@@ -55,6 +55,13 @@ var packages = [
     version: '4.5.6'
   }
 ];
+var customClientData = {
+  userEmail: 'email@gmail.com',
+  location: {
+    lgn: -77.695313,
+    lat: 40.103286
+  }
+};
 
 barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
   packagesInfo.available.forEach(function (package) {
@@ -84,7 +91,7 @@ The ```checkUpdate``` response is always as follow :
   "available":[
     // List of packages newly available for the device
     {
-      package: "abc.edf",
+      reference: "abc.edf",
       version: "0.0.1",
       url: "https://app.barracks.io/path/to/package/version/",
       size: 42,
@@ -95,7 +102,7 @@ The ```checkUpdate``` response is always as follow :
   "changed":[
     // List of packages already installed on the device that can be updated
     {
-      package: "abc.edf",
+      reference: "abc.edf",
       version: "0.0.1",
       url: "https://app.barracks.io/path/to/package/version/",
       size: 42,
@@ -106,14 +113,14 @@ The ```checkUpdate``` response is always as follow :
   "unchanged":[
     // List of packages already installed on the device that did not changed
     {
-      package: "abc.edf",
+      reference: "abc.edf",
       version: "0.0.1",
     }
   ],
   "unavailable":[
     // List of packages already installed on the device that cannot be used by the device anymore
     {
-      package: "abc.edf",
+      reference: "abc.edf",
     }
   ]
 }
@@ -143,12 +150,20 @@ var packages = [
 ];
 
 barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
-  packagesInfo.available.forEach(function (package) {
-    // Download the files using download
+  var promises = packagesInfo.available.map(function (package) {
+    // Download the files using download function within package
+    return package.download('/tmp/' + package.filename);
   });
 
-  packagesInfo.changed.forEach(function (package) {
-    // Do something with the updated packages
+  promises.push(packagesInfo.changed.map(function (package) {
+    // Download the files using barracks.downloadPackage function
+    return barracks.downloadPackage(package, '/tmp/' + package.filename);
+  }));
+
+  return promises;
+}).then(function (files) {
+  // Do something with the downloaded files
+  files.forEach(function (file) {
   });
 }).catch(function (err) {
   // Do something with the error (See error handling section)

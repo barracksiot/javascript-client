@@ -35,7 +35,7 @@ var barracks = new Barracks({
 
 function donwloadPackages(packages) {
   var promises = packages.map(function (package) {
-    return package.download('/tmp/' + package.package + '_' + package.version + '_' + package.filename);
+    return package.download('/tmp/' + package.reference + '_' + package.version + '_' + package.filename);
   });
 
   return Promise.all(promises);
@@ -43,7 +43,10 @@ function donwloadPackages(packages) {
 
 function handleAvailablePackages(packages) {
   donwloadPackages(packages).then(function (files) {
-    console.log('new packages ready to install :', files);
+    console.log('new packages ready to install :');
+    files.forEach(function (file) {
+      console.log(file);
+    });
   }).catch(function (err) {
     console.error('Error while downloading packages', err);
   });
@@ -51,7 +54,10 @@ function handleAvailablePackages(packages) {
 
 function handleChangedPackages(packages) {
   donwloadPackages(packages).then(function (files) {
-    console.log('updates ready to install :', files);
+    console.log('updates ready to install :');
+    files.forEach(function (file) {
+      console.log(file);
+    });
   }).catch(function (err) {
     console.error('Error while downloading packages', err);
   });
@@ -59,13 +65,13 @@ function handleChangedPackages(packages) {
 
 function handleUnchangedPackages(packages) {
   packages.forEach(function (package) {
-    console.log('package ' + package.package + ' did not change (version' + package.version + ')');
+    console.log('package ' + package.reference + ' did not change (version' + package.version + ')');
   });
 }
 
 function handleUnavailablePackages(packages) {
   packages.forEach(function (package) {
-    console.log('package ' + package.package + ' is not available anymore');
+    console.log('package ' + package.reference + ' is not available anymore');
   });
 }
 
