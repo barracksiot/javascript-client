@@ -100,7 +100,7 @@ The ```checkUpdate``` response is always as follow :
     }
   ],
   "changed":[
-    // List of packages already installed on the device that can be updated
+    // List of packages already installed on the device that have a new version
     {
       reference: "abc.edf",
       version: "0.0.1",
@@ -111,7 +111,7 @@ The ```checkUpdate``` response is always as follow :
     }
   ],
   "unchanged":[
-    // List of packages already installed on the device that did not changed
+    // List of packages already installed on the device that still have the same version
     {
       reference: "abc.edf",
       version: "0.0.1",
