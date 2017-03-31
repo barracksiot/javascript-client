@@ -107,12 +107,13 @@ describe('Constructor : ', function () {
 describe('checkUpdate(components, customClientData) ', function () {
 
   var barracks;
-  var resolveComponentsUrl = '/api/device/components/resolve';
+  var checkUpdateComponentsUrl = '/api/device/resolve';
   var requestMock = function () {};
+  var buildResponseMock = function () {};
 
   function getRequestPayloadForComponents(components) {
     return {
-      url: 'https://app.barracks.io' + resolveComponentsUrl,
+      url: 'https://app.barracks.io' + checkUpdateComponentsUrl,
       method: 'POST',
       headers: {
         'Authorization': API_KEY,
@@ -127,9 +128,17 @@ describe('checkUpdate(components, customClientData) ', function () {
   }
 
   beforeEach(function () {
+    requestMock = function () {};
+    buildResponseMock = function () {};
+
     var Barracks = proxyquire('../src/index.js', {
       'request': function (options, callback) {
         return requestMock(options, callback);
+      },
+      './responseBuilder': {
+        buildResponse: function (body, barracks) {
+          return buildResponseMock(body, barracks);
+        }
       }
     });
 
@@ -212,6 +221,11 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
+    var buildResponseSpy = sinon.spy();
+    buildResponseMock = function (body, barracks) {
+      buildResponseSpy(body, barracks);
+      return componentInfo;
+    };
 
     // When / Then
     barracks.checkUpdate(components).then(function (result) {
@@ -220,6 +234,11 @@ describe('checkUpdate(components, customClientData) ', function () {
       expect(requestSpy).to.have.been.calledWithExactly(
         getRequestPayloadForComponents(components),
         sinon.match.func
+      );
+      expect(buildResponseSpy).to.have.been.calledOnce;
+      expect(buildResponseSpy).to.have.been.calledWithExactly(
+        componentInfo,
+        sinon.match.object
       );
       done();
     }).catch(function (err) {
@@ -245,6 +264,11 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
+    var buildResponseSpy = sinon.spy();
+    buildResponseMock = function (body, barracks) {
+      buildResponseSpy(body, barracks);
+      return componentInfo;
+    };
 
     // When / Then
     barracks.checkUpdate(components).then(function (result) {
@@ -253,6 +277,11 @@ describe('checkUpdate(components, customClientData) ', function () {
       expect(requestSpy).to.have.been.calledWithExactly(
         getRequestPayloadForComponents(components),
         sinon.match.func
+      );
+      expect(buildResponseSpy).to.have.been.calledOnce;
+      expect(buildResponseSpy).to.have.been.calledWithExactly(
+        componentInfo,
+        sinon.match.object
       );
       done();
     }).catch(function (err) {

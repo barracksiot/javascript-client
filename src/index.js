@@ -5,9 +5,10 @@ var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var CHECK_UPDATE_ENDPOINT       = '/api/device/components/resolve';
+var CHECK_UPDATE_ENDPOINT       = '/api/device/resolve';
 
 require('es6-promise').polyfill();
+var responseBuilder = require('./responseBuilder');
 var fs = require('fs');
 var request = require('request');
 var fileHelper = require('./fileHelper');
@@ -49,7 +50,7 @@ Barracks.prototype.checkUpdate = function (packages, customClientData) {
           message: 'Check Update request failed: ' + error.message
         });
       } else if (response.statusCode == 200) {
-        resolve(JSON.parse(body));
+        resolve(responseBuilder.buildResponse(JSON.parse(body), that));
       } else {
         reject({
           type: ERROR_UNEXPECTED_SERVER_RESPONSE,
