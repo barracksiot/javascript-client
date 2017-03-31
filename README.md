@@ -43,7 +43,7 @@ var barracks = new Barracks({
 });
 ```
 
-### Check for an update:
+### Check for new packages and package updates:
 ```js
 var packages = [
   {
