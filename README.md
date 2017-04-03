@@ -64,19 +64,19 @@ var customClientData = {
 };
 
 barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
-  packagesInfo.available.forEach(function (package) {
+  packagesInfo.available.forEach(function (packageInfo) {
     // Do something with the newly available packages
   });
 
-  packagesInfo.changed.forEach(function (package) {
+  packagesInfo.changed.forEach(function (packageInfo) {
     // Do something with the updated packages
   });
 
-  packagesInfo.unchanged.forEach(function (package) {
+  packagesInfo.unchanged.forEach(function (packageInfo) {
     // Do something with the unchanged packages
   });
 
-  packagesInfo.unavailable.forEach(function (package) {
+  packagesInfo.unavailable.forEach(function (packageInfo) {
     // Do something with the unavailable packages
   });
 }).catch(function (err) {
@@ -88,7 +88,7 @@ The ```checkUpdate``` response is always as follow :
 
 ```js
 {
-  "available":[
+  available: [
     // List of packages newly available for the device
     {
       reference: "abc.edf",
@@ -96,10 +96,10 @@ The ```checkUpdate``` response is always as follow :
       url: "https://app.barracks.io/path/to/package/version/",
       size: 42,
       md5: "deadbeefbadc0ffee",
-      download: function (filePath) {};
+      download: function (filePath) {} // Function to download package
     }
   ],
-  "changed":[
+  changed: [
     // List of packages already installed on the device that have a new version
     {
       reference: "abc.edf",
@@ -107,17 +107,17 @@ The ```checkUpdate``` response is always as follow :
       url: "https://app.barracks.io/path/to/package/version/",
       size: 42,
       md5: "deadbeefbadc0ffee",
-      download: function (filePath) {};
+      download: function (filePath) {} // Function to download package
     }
   ],
-  "unchanged":[
+  unchanged: [
     // List of packages already installed on the device that still have the same version
     {
       reference: "abc.edf",
       version: "0.0.1",
     }
   ],
-  "unavailable":[
+  unavailable: [
     // List of packages already installed on the device that cannot be used by the device anymore
     {
       reference: "abc.edf",
@@ -126,16 +126,9 @@ The ```checkUpdate``` response is always as follow :
 }
 ```
 
-Where the ```download(filePath)``` function is a shortcut for ```barracks.downloadPackage(packageInfo, filePath)```, ```filePath``` being the path where the downloaded file is saved on the device.
-
-
 ### Download a package
 
 Once you have the response from checkUpdate, you'll be able to download file for all packages that are available for the device (packages that are in the ```available```, and ```changed``` lists of the response).
-
-As showed in the following example, you can
-* Use the download function from the packages object directly.
-* Use the barracks.donwloadPackage() method.
 
 ```js
 var packages = [
@@ -150,21 +143,25 @@ var packages = [
 ];
 
 barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
-  var promises = packagesInfo.available.map(function (package) {
-    // Download the files using download function within package
-    return package.download('/tmp/' + package.filename);
-  });
+  var downloadAvailablePackagesPromise = Promise.all(
+    packagesInfo.available.map(function (packageInfo) {
+      return package.download('/tmp/' + package.filename); // Return a Promise
+    })
+  );
 
-  promises.push(packagesInfo.changed.map(function (package) {
-    // Download the files using barracks.downloadPackage function
-    return barracks.downloadPackage(package, '/tmp/' + package.filename);
-  }));
+  var downloadChangedPackagesPromise = Promise.all(
+    packagesInfo.changed.map(function (packageInfo) {
+      return package.download('/tmp/' + package.filename); // Return a Promise
+    })
+  );
 
-  return promises;
+  return Promise.all(downloadAvailablePackagesPromise, downloadChangedPackagesPromise);
 }).then(function (files) {
-  // Do something with the downloaded files
-  files.forEach(function (file) {
-  });
+  var downloadedAvailableFiles = files[0]; // Result of downloadAvailablePackagesPromise
+  var downloadedChangedFiles = files[1]; // Result of downloadChangedPackagesPromise
+  /*
+    Do something with the downloaded files here
+  */
 }).catch(function (err) {
   // Do something with the error (See error handling section)
 });
