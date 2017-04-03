@@ -1,14 +1,17 @@
 'use strict';
 
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
+var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var CHECK_UPDATE_ENDPOINT       = '/api/device/v2/update/check';
+var CHECK_UPDATE_ENDPOINT       = '/api/device/resolve';
 
-require('./polyfill');
+require('es6-promise').polyfill();
+var responseBuilder = require('./responseBuilder');
+var fs = require('fs');
 var request = require('request');
-var clientHelper = require('./clientHelper');
+var fileHelper = require('./fileHelper');
 
 function Barracks(options) {
   this.options = {
@@ -47,13 +50,46 @@ Barracks.prototype.checkUpdate = function (packages, customClientData) {
           message: 'Check Update request failed: ' + error.message
         });
       } else if (response.statusCode == 200) {
-        resolve(clientHelper.buildCheckUpdateResult(JSON.parse(body)));
+        resolve(responseBuilder.buildResponse(JSON.parse(body), that.downloadPackage.bind(that)));
       } else {
         reject({
           type: ERROR_UNEXPECTED_SERVER_RESPONSE,
           message: body
         });
       }
+    });
+  });
+};
+
+Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
+  var that = this;
+  return new Promise(function (resolve, reject) {
+    var downloadParams = {
+      url: packageInfo.url,
+      method: 'GET',
+      headers: {
+        Authorization: that.options.apiKey
+      }
+    };
+
+    var fileStream = fs.createWriteStream(filePath);
+    request(downloadParams).on('response', function (response) {
+      if (response.statusCode != 200) {
+        fileStream.emit('error', {
+          type: ERROR_DOWNLOAD_FAILED,
+          message: 'Server replied with HTTP ' + response.statusCode
+        });
+      }
+    }).pipe(fileStream).on('close', function () {
+      fileHelper.checkMd5(filePath, packageInfo.md5).then(function () {
+        resolve(filePath);
+      }).catch(function (err) {
+        fileHelper.deleteFile(filePath, reject);
+        reject(err);
+      });
+    }).on('error', function (err) {
+      fileHelper.deleteFile(filePath, reject);
+      reject(err);
     });
   });
 };

@@ -6,6 +6,7 @@ var sinonChai = require('sinon-chai');
 var chai = require('chai');
 var expect = chai.expect;
 var proxyquire =  require('proxyquire');
+var Stream = require('stream');
 
 chai.use(sinonChai);
 
@@ -106,12 +107,13 @@ describe('Constructor : ', function () {
 describe('checkUpdate(components, customClientData) ', function () {
 
   var barracks;
+  var checkUpdateComponentsUrl = '/api/device/resolve';
   var requestMock = function () {};
-  var buildCheckUpdateResultMock = function () {};
+  var buildResponseMock = function () {};
 
   function getRequestPayloadForComponents(components) {
     return {
-      url: 'https://app.barracks.io/api/device/v2/update/check',
+      url: 'https://app.barracks.io' + checkUpdateComponentsUrl,
       method: 'POST',
       headers: {
         'Authorization': API_KEY,
@@ -126,13 +128,16 @@ describe('checkUpdate(components, customClientData) ', function () {
   }
 
   beforeEach(function () {
+    requestMock = function () {};
+    buildResponseMock = function () {};
+
     var Barracks = proxyquire('../src/index.js', {
       'request': function (options, callback) {
         return requestMock(options, callback);
       },
-      './clientHelper': {
-        buildCheckUpdateResult: function (response) {
-          return buildCheckUpdateResultMock(response);
+      './responseBuilder': {
+        buildResponse: function (body, downloadFunction) {
+          return buildResponseMock(body, downloadFunction);
         }
       }
     });
@@ -216,10 +221,10 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
-    var buildCheckUpdateResultSpy = sinon.spy();
-    buildCheckUpdateResultMock = function (response) {
-      buildCheckUpdateResultSpy(response);
-      return response;
+    var buildResponseSpy = sinon.spy();
+    buildResponseMock = function (body, downloadFunction) {
+      buildResponseSpy(body, downloadFunction);
+      return componentInfo;
     };
 
     // When / Then
@@ -230,8 +235,11 @@ describe('checkUpdate(components, customClientData) ', function () {
         getRequestPayloadForComponents(components),
         sinon.match.func
       );
-      expect(buildCheckUpdateResultSpy).to.have.been.calledOnce;
-      expect(buildCheckUpdateResultSpy).to.have.been.calledWithExactly(componentInfo);
+      expect(buildResponseSpy).to.have.been.calledOnce;
+      expect(buildResponseSpy).to.have.been.calledWithExactly(
+        componentInfo,
+        sinon.match.func
+      );
       done();
     }).catch(function (err) {
       done(err);
@@ -256,10 +264,10 @@ describe('checkUpdate(components, customClientData) ', function () {
       requestSpy(options, callback);
       callback(undefined, response, response.body);
     };
-    var buildCheckUpdateResultSpy = sinon.spy();
-    buildCheckUpdateResultMock = function (response) {
-      buildCheckUpdateResultSpy(response);
-      return response;
+    var buildResponseSpy = sinon.spy();
+    buildResponseMock = function (body, downloadFunction) {
+      buildResponseSpy(body, downloadFunction);
+      return componentInfo;
     };
 
     // When / Then
@@ -270,8 +278,245 @@ describe('checkUpdate(components, customClientData) ', function () {
         getRequestPayloadForComponents(components),
         sinon.match.func
       );
-      expect(buildCheckUpdateResultSpy).to.have.been.calledOnce;
-      expect(buildCheckUpdateResultSpy).to.have.been.calledWithExactly(componentInfo);
+      expect(buildResponseSpy).to.have.been.calledOnce;
+      expect(buildResponseSpy).to.have.been.calledWithExactly(
+        componentInfo,
+        sinon.match.func
+      );
+      done();
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+});
+
+describe('downloadPackage(packageInfo, filePath) ', function () {
+
+  var barracks;
+  var createWriteStreamMock = function () {};
+  var checkMd5Mock = function () {};
+  var deleteFileMock = function () {};
+  var requestMock = function () {};
+
+  beforeEach(function () {
+    var Barracks = proxyquire('../src/index.js', {
+      'fs': {
+        createWriteStream: function (path) {
+          return createWriteStreamMock(path);
+        }
+      },
+      './fileHelper': {
+        checkMd5: function (file, checksum) {
+          return checkMd5Mock(file, checksum);
+        },
+        deleteFile: function (file, reject) {
+          return deleteFileMock(file, reject);
+        }
+      },
+      'request': function (params) {
+        return requestMock(params);
+      }
+    });
+
+    barracks = new Barracks({
+      apiKey: API_KEY,
+      unitId: UNIT_ID
+    });
+  });
+
+  it('Should return ERROR_DOWNLOAD_FAILED when server return http code other than 200 OK', function (done) {
+    // Given
+    var response = { statusCode: 500 };
+    var packageInfo = {
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://not.barracks.io/path/to/file',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    };
+    var filePath = 'path/to/file.sh';
+
+    var fileStream = new Stream();
+    var createWriteStreamSpy = sinon.spy();
+    createWriteStreamMock = function (path) {
+      createWriteStreamSpy(path);
+      return fileStream;
+    };
+
+    var requestStream = new Stream();
+    var requestSpy = sinon.spy();
+    requestMock = function (params) {
+      requestSpy(params);
+      return requestStream;
+    };
+
+    var deleteFileSpy = sinon.spy();
+    deleteFileMock = function (file, reject) {
+      deleteFileSpy(file, reject);
+    };
+
+    setTimeout(function () {
+      requestStream.emit('response', response);
+    }, 75);
+
+    // When / Then
+    barracks.downloadPackage(packageInfo, filePath).then(function () {
+      done('Should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'DOWNLOAD_FAILED',
+        message: 'Server replied with HTTP ' + response.statusCode
+      });
+      expect(createWriteStreamSpy).to.have.been.calledOnce;
+      expect(createWriteStreamSpy).to.have.been.calledWithExactly(filePath);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly({
+        url: packageInfo.url,
+        method: 'GET',
+        headers: {
+          Authorization: API_KEY
+        }
+      });
+      expect(deleteFileSpy).to.have.been.calledOnce;
+      expect(deleteFileSpy).to.have.been.calledWithExactly(
+        filePath,
+        sinon.match.func
+      );
+      done();
+    });
+  });
+
+  it('Should return an error when md5 check fail', function (done) {
+    // Given
+    var response = { statusCode: 200 };
+    var md5Error = 'MD5 do not match !!';
+    var packageInfo = {
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://not.barracks.io/path/to/file',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    };
+    var filePath = 'path/to/file.sh';
+
+    var fileStream = new Stream();
+    var createWriteStreamSpy = sinon.spy();
+    createWriteStreamMock = function (path) {
+      createWriteStreamSpy(path);
+      return fileStream;
+    };
+
+    var requestStream = new Stream();
+    var requestSpy = sinon.spy();
+    requestMock = function (params) {
+      requestSpy(params);
+      return requestStream;
+    };
+
+    var checkMd5Spy = sinon.spy();
+    checkMd5Mock = function (path, checksum) {
+      checkMd5Spy(path, checksum);
+      return Promise.reject(md5Error);
+    };
+
+    var deleteFileSpy = sinon.spy();
+    deleteFileMock = function (file, reject) {
+      deleteFileSpy(file, reject);
+    };
+
+    setTimeout(function () {
+      requestStream.emit('response', response);
+    }, 75);
+    setTimeout(function () {
+      fileStream.emit('close');
+    }, 95);
+
+    // When / Then
+    barracks.downloadPackage(packageInfo, filePath).then(function () {
+      done('Should have failed');
+    }).catch(function (err) {
+      expect(err).to.be.equals(md5Error);
+      expect(createWriteStreamSpy).to.have.been.calledOnce;
+      expect(createWriteStreamSpy).to.have.been.calledWithExactly(filePath);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly({
+        url: packageInfo.url,
+        method: 'GET',
+        headers: {
+          Authorization: API_KEY
+        }
+      });
+      expect(checkMd5Spy).to.have.been.calledOnce;
+      expect(checkMd5Spy).to.have.been.calledWithExactly(
+        filePath,
+        packageInfo.md5
+      );
+      expect(deleteFileSpy).to.have.been.calledOnce;
+      expect(deleteFileSpy).to.have.been.calledWithExactly(
+        filePath,
+        sinon.match.func
+      );
+      done();
+    });
+  });
+
+  it('Should return the path to downloaded file when request successful', function (done) {
+    // Given
+    var response = { statusCode: 200 };
+    var packageInfo = {
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://not.barracks.io/path/to/file',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    };
+    var filePath = 'path/to/file.sh';
+
+    var fileStream = new Stream();
+    var createWriteStreamSpy = sinon.spy();
+    createWriteStreamMock = function (path) {
+      createWriteStreamSpy(path);
+      return fileStream;
+    };
+
+    var requestStream = new Stream();
+    var requestSpy = sinon.spy();
+    requestMock = function (params) {
+      requestSpy(params);
+      return requestStream;
+    };
+
+    var checkMd5Spy = sinon.spy();
+    checkMd5Mock = function (path, checksum) {
+      checkMd5Spy(path, checksum);
+      return Promise.resolve();
+    };
+
+    setTimeout(function () {
+      requestStream.emit('response', response);
+    }, 75);
+    setTimeout(function () {
+      fileStream.emit('close');
+    }, 95);
+
+    // When / Then
+    barracks.downloadPackage(packageInfo, filePath).then(function (result) {
+      expect(result).to.be.equals(filePath);
+      expect(createWriteStreamSpy).to.have.been.calledOnce;
+      expect(createWriteStreamSpy).to.have.been.calledWithExactly(filePath);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly({
+        url: packageInfo.url,
+        method: 'GET',
+        headers: {
+          Authorization: API_KEY
+        }
+      });
+      expect(checkMd5Spy).to.have.been.calledOnce;
+      expect(checkMd5Spy).to.have.been.calledWithExactly(
+        filePath,
+        packageInfo.md5
+      );
       done();
     }).catch(function (err) {
       done(err);

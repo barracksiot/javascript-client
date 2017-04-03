@@ -13,53 +13,85 @@ process.argv.forEach(function (val, index) {
  ** documentation for more information.                                               **/
 var barracksBaseUrl = args.baseUrl;
 var barracksApiKey = args.apiKey;
+var isSelfSigned = args.selfSigned;
 
 if (!barracksApiKey) {
   console.log('Argument --apiKey <API_KEY> is mandatory.');
   console.log('<API_KEY> is your user api key that you can find on the Account page of Barracks.');
   console.log('You can also use the argument --baseUrl <BARRACKS_URL> if you want to request another domain than the default one.');
+  console.log('And the argument --selfSigned with value 1 or 0 if your baseUrl use a self signed certificate.');
   process.exit();
 }
 
-var device = {
-  versionId: 'v0.0.0',
-  unitId: 'unit9'
-};
+var unitId = 'SDK-example-unit';
+
+var packages = [
+  {
+    reference: 'greg.pckg.test',
+    version: '0.2.0'
+  },
+  {
+    reference: 'com.test.1234',
+    version: 'v-1490894199'
+  },
+  {
+    reference: 'ref-package-1490294068',
+    version: 'coucou'
+  }
+];
 
 var barracks = new Barracks({
   baseURL: barracksBaseUrl,
   apiKey: barracksApiKey,
-  unitId: device.unitId,
-  downloadFilePath: '/tmp/file.tmp'
+  unitId: unitId,
+  allowSelfSigned: (isSelfSigned ? (isSelfSigned === '1') : false)
 });
 
+function donwloadPackages(packages) {
+  var promises = packages.map(function (package) {
+    return package.download('/tmp/' + package.reference + '_' + package.version + '_' + package.filename);
+  });
+
+  return Promise.all(promises);
+}
+
 function handleAvailablePackages(packages) {
-  packages.forEach(function (package) {
-    console.log('package ' + package.package + ' (version ' + package.version + ') is now available');
+  donwloadPackages(packages).then(function (files) {
+    console.log('new packages ready to install :');
+    files.forEach(function (file) {
+      console.log(file);
+    });
+  }).catch(function (err) {
+    console.error('Error while downloading packages', err);
   });
 }
 
 function handleChangedPackages(packages) {
-  packages.forEach(function (package) {
-    console.log('package ' + package.package + ' can be updated to version ' + package.version);
+  donwloadPackages(packages).then(function (files) {
+    console.log('updates ready to install :');
+    files.forEach(function (file) {
+      console.log(file);
+    });
+  }).catch(function (err) {
+    console.error('Error while downloading packages', err);
   });
 }
 
 function handleUnchangedPackages(packages) {
   packages.forEach(function (package) {
-    console.log('package ' + package.package + ' did not change (version' + package.version + ')');
+    console.log('package ' + package.reference + ' did not change (version' + package.version + ')');
   });
 }
 
 function handleUnavailablePackages(packages) {
   packages.forEach(function (package) {
-    console.log('package ' + package.package + ' is not available anymore');
+    console.log('package ' + package.reference + ' is not available anymore');
   });
 }
 
 function waitAndDisplayUpdate() {
   setTimeout(function () {
-    barracks.checkUpdate(device.versionId, { gender: 'Female' }).then(function (response) {
+    barracks.checkUpdate(packages, { test: 'coucou' }).then(function (response) {
       handleAvailablePackages(response.available);
       handleChangedPackages(response.changed);
       handleUnchangedPackages(response.unchanged);

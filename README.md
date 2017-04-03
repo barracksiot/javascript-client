@@ -16,7 +16,7 @@ $ npm install barracks-sdk
 ### Create a Barracks SDK instance:
 Get your user api key from the Account page of the [Barracks application](https://app.barracks.io/account).
 
-#### Basic Barracks SDK instance :
+#### Default Barracks SDK instance :
 ```js
 var Barracks = require('barracks-sdk');
 
@@ -28,7 +28,7 @@ var barracks = new Barracks({
 
 #### Custom Barracks SDK instance :
 You can specify two optionnals attributes to the Barracks SDK if you want to use a proxy for your devices.
-With ```baseURL``` you can give the address of your proxy that use use to contact Barracks, and the ```allowSelfSigned``` boolean allow you to have a self signed SSL certificate on your proxy server.
+With ```baseURL``` you can give the address of your proxy that use to contact Barracks, and the ```allowSelfSigned``` boolean allow you to have a self signed SSL certificate on your proxy server.
 Default value of ```baseURL``` is ```https://app.barracks.io```.
 Default value of ```allowSelfSigned``` is ```false```.
 
@@ -43,7 +43,93 @@ var barracks = new Barracks({
 });
 ```
 
-### Check for an update:
+### Check for new packages and package updates:
+```js
+var packages = [
+  {
+    reference: 'package.1.ref',
+    version: '1.2.3'
+  },
+  {
+    reference: 'package.2.ref',
+    version: '4.5.6'
+  }
+];
+var customClientData = {
+  userEmail: 'email@gmail.com',
+  location: {
+    lgn: -77.695313,
+    lat: 40.103286
+  }
+};
+
+barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
+  packagesInfo.available.forEach(function (packageInfo) {
+    // Do something with the newly available packages
+  });
+
+  packagesInfo.changed.forEach(function (packageInfo) {
+    // Do something with the updated packages
+  });
+
+  packagesInfo.unchanged.forEach(function (packageInfo) {
+    // Do something with the unchanged packages
+  });
+
+  packagesInfo.unavailable.forEach(function (packageInfo) {
+    // Do something with the unavailable packages
+  });
+}).catch(function (err) {
+  // Do something with the error (See error handling section)
+});
+```
+
+The ```checkUpdate``` response is always as follow :
+
+```js
+{
+  available: [
+    // List of packages newly available for the device
+    {
+      reference: "abc.edf",
+      version: "0.0.1",
+      url: "https://app.barracks.io/path/to/package/version/",
+      size: 42,
+      md5: "deadbeefbadc0ffee",
+      download: function (filePath) {} // Function to download package
+    }
+  ],
+  changed: [
+    // List of packages already installed on the device that have a new version
+    {
+      reference: "abc.edf",
+      version: "0.0.1",
+      url: "https://app.barracks.io/path/to/package/version/",
+      size: 42,
+      md5: "deadbeefbadc0ffee",
+      download: function (filePath) {} // Function to download package
+    }
+  ],
+  unchanged: [
+    // List of packages already installed on the device that still have the same version
+    {
+      reference: "abc.edf",
+      version: "0.0.1",
+    }
+  ],
+  unavailable: [
+    // List of packages already installed on the device that cannot be used by the device anymore
+    {
+      reference: "abc.edf",
+    }
+  ]
+}
+```
+
+### Download a package
+
+Once you have the response from checkUpdate, you'll be able to download file for all packages that are available for the device (packages that are in the ```available```, and ```changed``` lists of the response).
+
 ```js
 var packages = [
   {
@@ -57,100 +143,30 @@ var packages = [
 ];
 
 barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
-  packagesInfo.available.forEach(function (package) {
-    // Do something with the newly available packages
-  });
+  var downloadAvailablePackagesPromise = Promise.all(
+    packagesInfo.available.map(function (packageInfo) {
+      return package.download('/tmp/' + package.filename); // Return a Promise
+    })
+  );
 
-  packagesInfo.changed.forEach(function (package) {
-    // Do something with the updated packages
-  });
+  var downloadChangedPackagesPromise = Promise.all(
+    packagesInfo.changed.map(function (packageInfo) {
+      return package.download('/tmp/' + package.filename); // Return a Promise
+    })
+  );
 
-  packagesInfo.unchanged.forEach(function (package) {
-    // Do something with the unchanged packages
-  });
-
-  packagesInfo.unavailable.forEach(function (package) {
-    // Do something with the unavailable packages
-  });
+  return Promise.all(downloadAvailablePackagesPromise, downloadChangedPackagesPromise);
+}).then(function (files) {
+  var downloadedAvailableFiles = files[0]; // Result of downloadAvailablePackagesPromise
+  var downloadedChangedFiles = files[1]; // Result of downloadChangedPackagesPromise
+  /*
+    Do something with the downloaded files here
+  */
 }).catch(function (err) {
   // Do something with the error (See error handling section)
 });
 ```
 
-The ```checkUpdate``` response is always as follow :
-
-```js
-{
-  "available":[
-    // List of packages newly available for the device
-    {
-      "package": "abc.edf",
-      "version": "0.0.1",
-      "url":"https://dtc.io/",
-      "size": 42,
-      "md5":"deadbeefbadc0ffee"
-    }
-  ],
-  "changed":[
-    // List of packages already installed on the device that can be updated
-    {
-      "package": "abc.edf",
-      "version": "0.0.1",
-      "url":"https://dtc.io/",
-      "size": 42,
-      "md5":"deadbeefbadc0ffee"
-    }
-  ],
-  "unchanged":[
-    // List of packages already installed on the device that did not changed
-    {
-      "package": "abc.edf",
-      "version": "0.0.1",
-    }
-  ],
-  "unavailable":[
-    // List of packages already installed on the device that cannot be used by the device anymore
-    {
-      "package": "abc.edf",
-    }
-  ]
-}
-```
-
-<!-- 
-
-### Check for an update and download it:
-```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    return update.download();
-  }
-  return Promise.resolve();
-}).then(function (file) {
-  if (file) {
-    // Do something with the file
-  }
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
-
-
-### Check for an update and download it without chaining the Promises:
-```js
-barracks.checkUpdate(currentDeviceVersion, customClientData).then(function (update) {
-  if (update) {
-    update.download().then(function (file) {
-      // Do something with the file
-    }).catch(function (err) {
-      // Do something with the download error
-    });
-  }
-}).catch(function (err) {
-  // Do something with the error (See error handling section)
-});
-```
- -->
 
 ## Error Handling
 
