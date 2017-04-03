@@ -136,8 +136,8 @@ describe('checkUpdate(components, customClientData) ', function () {
         return requestMock(options, callback);
       },
       './responseBuilder': {
-        buildResponse: function (body, barracks) {
-          return buildResponseMock(body, barracks);
+        buildResponse: function (body, downloadFunction) {
+          return buildResponseMock(body, downloadFunction);
         }
       }
     });
@@ -222,8 +222,8 @@ describe('checkUpdate(components, customClientData) ', function () {
       callback(undefined, response, response.body);
     };
     var buildResponseSpy = sinon.spy();
-    buildResponseMock = function (body, barracks) {
-      buildResponseSpy(body, barracks);
+    buildResponseMock = function (body, downloadFunction) {
+      buildResponseSpy(body, downloadFunction);
       return componentInfo;
     };
 
@@ -238,7 +238,7 @@ describe('checkUpdate(components, customClientData) ', function () {
       expect(buildResponseSpy).to.have.been.calledOnce;
       expect(buildResponseSpy).to.have.been.calledWithExactly(
         componentInfo,
-        sinon.match.object
+        sinon.match.func
       );
       done();
     }).catch(function (err) {
@@ -265,8 +265,8 @@ describe('checkUpdate(components, customClientData) ', function () {
       callback(undefined, response, response.body);
     };
     var buildResponseSpy = sinon.spy();
-    buildResponseMock = function (body, barracks) {
-      buildResponseSpy(body, barracks);
+    buildResponseMock = function (body, downloadFunction) {
+      buildResponseSpy(body, downloadFunction);
       return componentInfo;
     };
 
@@ -281,7 +281,7 @@ describe('checkUpdate(components, customClientData) ', function () {
       expect(buildResponseSpy).to.have.been.calledOnce;
       expect(buildResponseSpy).to.have.been.calledWithExactly(
         componentInfo,
-        sinon.match.object
+        sinon.match.func
       );
       done();
     }).catch(function (err) {

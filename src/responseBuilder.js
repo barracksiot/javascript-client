@@ -1,18 +1,18 @@
-function getPackageWithDownload(pckg, barracks) {
+function getPackageWithDownload(pckg, downloadFunction) {
   pckg.download = function (filePath) {
-    return barracks.downloadPackage(pckg, filePath);
+    return downloadFunction(pckg, filePath);
   };
   return pckg;
 }
 
 module.exports = {
-  buildResponse: function (body, barracks) {
+  buildResponse: function (body, downloadFunction) {
     return {
       available: body.available.map(function (pckg) {
-        return getPackageWithDownload(pckg, barracks);
+        return getPackageWithDownload(pckg, downloadFunction);
       }),
       changed: body.changed.map(function (pckg) {
-        return getPackageWithDownload(pckg, barracks);
+        return getPackageWithDownload(pckg, downloadFunction);
       }),
       unchanged: body.unchanged,
       unavailable: body.unavailable

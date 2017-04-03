@@ -2,14 +2,13 @@
 /* global describe, it */
 
 var chai = require('chai');
+var sinon = require('sinon');
 var expect = chai.expect;
 var builder = require('../src/responseBuilder');
 
 describe('buildResponse : ', function () {
 
-  var barracks = {
-    downloadPackage: function () {}
-  };
+  var downloadPackage = function () {};
 
   it('Should add a download function to the available packages', function () {
     // Given
@@ -29,7 +28,7 @@ describe('buildResponse : ', function () {
     };
 
     // When
-    var result = builder.buildResponse(body, barracks);
+    var result = builder.buildResponse(body, downloadPackage);
 
     // Then
     expect(result.available[0]).to.have.property('reference').and.to.be.equals(package1.reference);
@@ -61,7 +60,7 @@ describe('buildResponse : ', function () {
     };
 
     // When
-    var result = builder.buildResponse(body, barracks);
+    var result = builder.buildResponse(body, downloadPackage);
 
     // Then
     expect(result.available).to.be.an('array').and.to.have.lengthOf(0);
@@ -93,7 +92,7 @@ describe('buildResponse : ', function () {
     };
 
     // When
-    var result = builder.buildResponse(body, barracks);
+    var result = builder.buildResponse(body, downloadPackage);
 
     // Then
     expect(result.available).to.be.an('array').and.to.have.lengthOf(0);
@@ -125,7 +124,7 @@ describe('buildResponse : ', function () {
     };
 
     // When
-    var result = builder.buildResponse(body, barracks);
+    var result = builder.buildResponse(body, downloadPackage);
 
     // Then
     expect(result.available).to.be.an('array').and.to.have.lengthOf(0);
@@ -137,5 +136,29 @@ describe('buildResponse : ', function () {
     expect(result.unavailable[1]).to.have.property('reference').and.to.be.equals(package2.reference);
     expect(result.unavailable[1]).to.have.property('version').and.to.be.equals(package2.version);
     expect(result.unavailable[1]).to.not.have.property('download');
+  });
+
+  it('Should bind object with given function', function () {
+    // Given
+    var package = {
+      reference: 'plop',
+      version: 'plop1.1'
+    };
+    var body = {
+      available: [ package ],
+      changed: [],
+      unchanged: [],
+      unavailable: []
+    };
+    var downloadFunction = sinon.spy();
+    var response = builder.buildResponse(body, downloadFunction);
+    var filePath = 'path/to/file.sh';
+
+    // When
+    response.available[0].download(filePath);
+
+    // Then
+    expect(downloadFunction).to.have.been.calledOnce;
+    expect(downloadFunction).to.have.been.calledWithExactly(package, filePath);
   });
 });

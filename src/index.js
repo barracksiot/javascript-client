@@ -50,7 +50,7 @@ Barracks.prototype.checkUpdate = function (packages, customClientData) {
           message: 'Check Update request failed: ' + error.message
         });
       } else if (response.statusCode == 200) {
-        resolve(responseBuilder.buildResponse(JSON.parse(body), that));
+        resolve(responseBuilder.buildResponse(JSON.parse(body), that.downloadPackage.bind(that)));
       } else {
         reject({
           type: ERROR_UNEXPECTED_SERVER_RESPONSE,
