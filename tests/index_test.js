@@ -36,7 +36,6 @@ describe('Constructor : ', function () {
     expect(barracks.checkUpdate).to.be.a('function');
     expect(barracks.options).to.deep.equals({
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       baseURL: expectedBaseUrl
     });
   }
@@ -44,8 +43,7 @@ describe('Constructor : ', function () {
   it('Should return the Barracks object with default values when minimums options given', function () {
     // Given
     var options = {
-      apiKey: API_KEY,
-      unitId: UNIT_ID
+      apiKey: API_KEY
     };
 
     // When
@@ -60,7 +58,6 @@ describe('Constructor : ', function () {
     var url = 'not.barracks.io';
     var options = {
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       baseURL: url
     };
 
@@ -75,7 +72,6 @@ describe('Constructor : ', function () {
     // Given
     var options = {
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       allowSelfSigned: 'plop'
     };
 
@@ -91,7 +87,6 @@ describe('Constructor : ', function () {
     // Given
     var options = {
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       allowSelfSigned: true
     };
 
@@ -159,7 +154,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function () {
+    barracks.checkUpdate(UNIT_ID, components).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -187,7 +182,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function () {
+    barracks.checkUpdate(UNIT_ID, components).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -228,7 +223,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function (result) {
+    barracks.checkUpdate(UNIT_ID, components).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
@@ -271,7 +266,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function (result) {
+    barracks.checkUpdate(UNIT_ID, components).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(

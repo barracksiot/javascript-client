@@ -16,8 +16,7 @@ var fileHelper = require('./fileHelper');
 function Barracks(options) {
   this.options = {
     baseURL: options.baseURL || DEFAULT_BARRACKS_BASE_URL,
-    apiKey: options.apiKey,
-    unitId: options.unitId
+    apiKey: options.apiKey
   };
 
   if (options.allowSelfSigned && options.allowSelfSigned === true) {
@@ -25,7 +24,7 @@ function Barracks(options) {
   }
 }
 
-Barracks.prototype.checkUpdate = function (packages, customClientData) {
+Barracks.prototype.checkUpdate = function (unitId, packages, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
     var requestOptions = {
@@ -36,7 +35,7 @@ Barracks.prototype.checkUpdate = function (packages, customClientData) {
         'Content-type': 'application/json'
       },
       body: JSON.stringify({
-        unitId: that.options.unitId,
+        unitId: unitId,
         customClientData: customClientData,
         components: packages
       })
