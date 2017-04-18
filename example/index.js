@@ -97,6 +97,7 @@ function handleUnavailablePackages(packages) {
 function waitAndDisplayUpdate() {
   setTimeout(function () {
     barracks.checkUpdate(unitId, packages, customClientData).then(function (response) {
+    barracks.getDevicePackages(unitId, packages, customClientData).then(function (response) {
       handleAvailablePackages(response.available);
       handleChangedPackages(response.changed);
       handleUnchangedPackages(response.unchanged);

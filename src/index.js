@@ -5,7 +5,7 @@ var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
 
 var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var CHECK_UPDATE_ENDPOINT       = '/api/device/resolve';
+var GET_DEVICE_PACKAGES_ENDPOINT       = '/api/device/resolve';
 
 require('es6-promise').polyfill();
 var responseBuilder = require('./responseBuilder');
@@ -24,11 +24,11 @@ function Barracks(options) {
   }
 }
 
-Barracks.prototype.checkUpdate = function (unitId, packages, customClientData) {
+Barracks.prototype.getDevicePackages = function (unitId, packages, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
     var requestOptions = {
-      url: that.options.baseURL + CHECK_UPDATE_ENDPOINT,
+      url: that.options.baseURL + GET_DEVICE_PACKAGES_ENDPOINT,
       method: 'POST',
       headers: {
         'Authorization': that.options.apiKey,

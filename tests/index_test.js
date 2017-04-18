@@ -37,7 +37,7 @@ describe('Constructor : ', function () {
   function validateBarracksObject(barracks, expectedBaseUrl) {
     expect(barracks).to.be.an('object');
     expect(barracks.options).to.be.an('object');
-    expect(barracks.checkUpdate).to.be.a('function');
+    expect(barracks.getDevicePackages).to.be.a('function');
     expect(barracks.options).to.deep.equals({
       apiKey: API_KEY,
       baseURL: expectedBaseUrl
@@ -103,16 +103,16 @@ describe('Constructor : ', function () {
   });
 });
 
-describe('checkUpdate(unitId, components, customClientData) ', function () {
+describe('getDevicePackages(unitId, components, customClientData) ', function () {
 
   var barracks;
-  var checkUpdateComponentsUrl = '/api/device/resolve';
+  var getDevicePackagesComponentsUrl = '/api/device/resolve';
   var requestMock = function () {};
   var buildResponseMock = function () {};
 
   function getRequestPayloadForComponents(components, customClientData) {
     return {
-      url: 'https://app.barracks.io' + checkUpdateComponentsUrl,
+      url: 'https://app.barracks.io' + getDevicePackagesComponentsUrl,
       method: 'POST',
       headers: {
         'Authorization': API_KEY,
@@ -158,7 +158,7 @@ describe('checkUpdate(unitId, components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(UNIT_ID, components).then(function () {
+    barracks.getDevicePackages(UNIT_ID, components).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -186,7 +186,7 @@ describe('checkUpdate(unitId, components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(UNIT_ID, components).then(function () {
+    barracks.getDevicePackages(UNIT_ID, components).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -227,7 +227,7 @@ describe('checkUpdate(unitId, components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(UNIT_ID, components).then(function (result) {
+    barracks.getDevicePackages(UNIT_ID, components).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
@@ -270,7 +270,7 @@ describe('checkUpdate(unitId, components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(UNIT_ID, components, CUSTOM_CLIENT_DATA).then(function (result) {
+    barracks.getDevicePackages(UNIT_ID, components, CUSTOM_CLIENT_DATA).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
@@ -313,7 +313,7 @@ describe('checkUpdate(unitId, components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(UNIT_ID, components).then(function (result) {
+    barracks.getDevicePackages(UNIT_ID, components).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
