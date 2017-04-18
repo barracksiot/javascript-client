@@ -12,6 +12,10 @@ chai.use(sinonChai);
 
 var UNIT_ID = 'unit1';
 var API_KEY = 'validKey';
+var CUSTOM_CLIENT_DATA = {
+  aKey: 'aValue',
+  anotherKey: true
+};
 
 var component1 = {
   reference: 'component.1.ref',
@@ -99,14 +103,14 @@ describe('Constructor : ', function () {
   });
 });
 
-describe('checkUpdate(components, customClientData) ', function () {
+describe('checkUpdate(unitId, components, customClientData) ', function () {
 
   var barracks;
   var checkUpdateComponentsUrl = '/api/device/resolve';
   var requestMock = function () {};
   var buildResponseMock = function () {};
 
-  function getRequestPayloadForComponents(components) {
+  function getRequestPayloadForComponents(components, customClientData) {
     return {
       url: 'https://app.barracks.io' + checkUpdateComponentsUrl,
       method: 'POST',
@@ -116,7 +120,7 @@ describe('checkUpdate(components, customClientData) ', function () {
       },
       body: JSON.stringify({
         unitId: UNIT_ID,
-        customClientData: undefined,
+        customClientData: customClientData,
         components: components
       })
     };
@@ -228,6 +232,49 @@ describe('checkUpdate(components, customClientData) ', function () {
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
         getRequestPayloadForComponents(components),
+        sinon.match.func
+      );
+      expect(buildResponseSpy).to.have.been.calledOnce;
+      expect(buildResponseSpy).to.have.been.calledWithExactly(
+        componentInfo,
+        sinon.match.func
+      );
+      done();
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('Should send customClientData and return server response when server return 200 OK', function (done) {
+    // Given
+    var componentInfo = {
+      available:[],
+      changed:[],
+      unchanged:[],
+      unavailable:[]
+    };
+    var response = {
+      body: JSON.stringify(componentInfo),
+      statusCode: 200
+    };
+    var components = [ component1, component2 ];
+    var requestSpy = sinon.spy();
+    requestMock = function (options, callback) {
+      requestSpy(options, callback);
+      callback(undefined, response, response.body);
+    };
+    var buildResponseSpy = sinon.spy();
+    buildResponseMock = function (body, downloadFunction) {
+      buildResponseSpy(body, downloadFunction);
+      return componentInfo;
+    };
+
+    // When / Then
+    barracks.checkUpdate(UNIT_ID, components, CUSTOM_CLIENT_DATA).then(function (result) {
+      expect(result).to.deep.equals(componentInfo);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly(
+        getRequestPayloadForComponents(components, CUSTOM_CLIENT_DATA),
         sinon.match.func
       );
       expect(buildResponseSpy).to.have.been.calledOnce;
