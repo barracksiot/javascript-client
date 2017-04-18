@@ -3,9 +3,10 @@
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
 var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
+var ERROR_MISSING_MANDATORY_ARGUMENT  = 'MISSING_MANDATORY_ARGUMENT';
 
-var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var GET_DEVICE_PACKAGES_ENDPOINT       = '/api/device/resolve';
+var DEFAULT_BARRACKS_BASE_URL         = 'https://app.barracks.io';
+var GET_DEVICE_PACKAGES_ENDPOINT      = '/api/device/resolve';
 
 require('es6-promise').polyfill();
 var responseBuilder = require('./responseBuilder');
@@ -27,6 +28,13 @@ function Barracks(options) {
 Barracks.prototype.getDevicePackages = function (unitId, packages, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
+    if (!unitId || !packages) {
+      reject({
+        type: ERROR_MISSING_MANDATORY_ARGUMENT,
+        message: 'missing or empty unitId or packages arguments'
+      });
+    }
+
     var requestOptions = {
       url: that.options.baseURL + GET_DEVICE_PACKAGES_ENDPOINT,
       method: 'POST',
@@ -63,6 +71,13 @@ Barracks.prototype.getDevicePackages = function (unitId, packages, customClientD
 Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
   var that = this;
   return new Promise(function (resolve, reject) {
+    if (!packageInfo) {
+      reject({
+        type: ERROR_MISSING_MANDATORY_ARGUMENT,
+        message: 'missing or empty packageInfo argument'
+      });
+    }
+
     var downloadParams = {
       url: packageInfo.url,
       method: 'GET',

@@ -147,6 +147,64 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
     });
   });
 
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when no unitId given', function (done) {
+    // Given
+    var components = [ component1, component2 ];
+
+    // When / Then
+    barracks.getDevicePackages(undefined, components).then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when empty unitId given', function (done) {
+    // Given
+    var components = [ component1, component2 ];
+
+    // When / Then
+    barracks.getDevicePackages('', components).then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when no packages given', function (done) {
+    // When / Then
+    barracks.getDevicePackages(UNIT_ID).then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when empty packages given', function (done) {
+    // When / Then
+    barracks.getDevicePackages(UNIT_ID, '').then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
   it('Should return request failed error when request failed', function (done) {
     // Given
     var error = { message: 'Error occured' };
@@ -363,6 +421,32 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
     barracks = new Barracks({
       apiKey: API_KEY,
       unitId: UNIT_ID
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when no packageInfo given', function (done) {
+    // When / Then
+    barracks.downloadPackage().then(function () {
+      done('Should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty packageInfo argument'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when empty packageInfo given', function (done) {
+    // When / Then
+    barracks.downloadPackage('').then(function () {
+      done('Should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty packageInfo argument'
+      });
+      done();
     });
   });
 
