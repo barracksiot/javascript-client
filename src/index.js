@@ -13,6 +13,7 @@ var responseBuilder = require('./responseBuilder');
 var fs = require('fs');
 var request = require('request');
 var fileHelper = require('./fileHelper');
+var uuid = require('uuid/v1');
 
 function Barracks(options) {
   this.options = {
@@ -77,6 +78,8 @@ Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
         message: 'missing or empty packageInfo argument'
       });
     }
+
+    filePath = filePath || uuid() + '_' + packageInfo.filename;
 
     var downloadParams = {
       url: packageInfo.url,

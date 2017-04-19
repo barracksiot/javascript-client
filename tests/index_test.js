@@ -397,6 +397,7 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
   var checkMd5Mock = function () {};
   var deleteFileMock = function () {};
   var requestMock = function () {};
+  var uuidMock = function() {};
 
   beforeEach(function () {
     var Barracks = proxyquire('../src/index.js', {
@@ -415,6 +416,9 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
       },
       'request': function (params) {
         return requestMock(params);
+      },
+      'uuid/v1': function () {
+        return uuidMock();
       }
     });
 
@@ -641,6 +645,80 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
       expect(checkMd5Spy).to.have.been.calledOnce;
       expect(checkMd5Spy).to.have.been.calledWithExactly(
         filePath,
+        packageInfo.md5
+      );
+      done();
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('Should generate random path for the file to download when no filePath given', function (done) {
+    // Given
+    var response = { statusCode: 200 };
+    var packageInfo = {
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://not.barracks.io/path/to/file',
+      filename: 'myFile.sh',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    };
+
+    var fileStream = new Stream();
+    var createWriteStreamSpy = sinon.spy();
+    createWriteStreamMock = function (path) {
+      createWriteStreamSpy(path);
+      return fileStream;
+    };
+
+    var requestStream = new Stream();
+    var requestSpy = sinon.spy();
+    requestMock = function (params) {
+      requestSpy(params);
+      return requestStream;
+    };
+
+    var checkMd5Spy = sinon.spy();
+    checkMd5Mock = function (path, checksum) {
+      checkMd5Spy(path, checksum);
+      return Promise.resolve();
+    };
+
+    var uuidSpy = sinon.spy();
+    var randomUuid = 'qaserdxcftygvghujhnbnjkmklknbhgfcxdesazw';
+    uuidMock = function () {
+      uuidSpy();
+      return randomUuid;
+    };
+
+    var expectedFilePath = randomUuid + '_' + packageInfo.filename;
+
+    setTimeout(function () {
+      requestStream.emit('response', response);
+    }, 75);
+    setTimeout(function () {
+      fileStream.emit('close');
+    }, 95);
+
+    // When / Then
+    barracks.downloadPackage(packageInfo).then(function (result) {
+      expect(result).to.be.equals(expectedFilePath);
+      expect(uuidSpy).to.have.been.calledOnce;
+      expect(uuidSpy).to.have.been.calledWithExactly();
+      expect(createWriteStreamSpy).to.have.been.calledOnce;
+      expect(createWriteStreamSpy).to.have.been.calledWithExactly(expectedFilePath);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly({
+        url: packageInfo.url,
+        method: 'GET',
+        headers: {
+          Authorization: API_KEY
+        }
+      });
+      expect(checkMd5Spy).to.have.been.calledOnce;
+      expect(checkMd5Spy).to.have.been.calledWithExactly(
+        expectedFilePath,
         packageInfo.md5
       );
       done();
