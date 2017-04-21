@@ -24,6 +24,12 @@ if (!barracksApiKey) {
 }
 
 var unitId = 'SDK-example-unit';
+var customClientData = {
+  type: 'alpha',
+  extra: {
+    app2: true
+  }
+};
 
 var packages = [
   {
@@ -43,7 +49,6 @@ var packages = [
 var barracks = new Barracks({
   baseURL: barracksBaseUrl,
   apiKey: barracksApiKey,
-  unitId: unitId,
   allowSelfSigned: (isSelfSigned ? (isSelfSigned === '1') : false)
 });
 
@@ -91,7 +96,7 @@ function handleUnavailablePackages(packages) {
 
 function waitAndDisplayUpdate() {
   setTimeout(function () {
-    barracks.checkUpdate(packages, { test: 'coucou' }).then(function (response) {
+    barracks.getDevicePackages(unitId, packages, customClientData).then(function (response) {
       handleAvailablePackages(response.available);
       handleChangedPackages(response.changed);
       handleUnchangedPackages(response.unchanged);

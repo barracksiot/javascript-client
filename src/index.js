@@ -3,21 +3,22 @@
 var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
 var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
 var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
+var ERROR_MISSING_MANDATORY_ARGUMENT  = 'MISSING_MANDATORY_ARGUMENT';
 
-var DEFAULT_BARRACKS_BASE_URL   = 'https://app.barracks.io';
-var CHECK_UPDATE_ENDPOINT       = '/api/device/resolve';
+var DEFAULT_BARRACKS_BASE_URL         = 'https://app.barracks.io';
+var GET_DEVICE_PACKAGES_ENDPOINT      = '/api/device/resolve';
 
 require('es6-promise').polyfill();
 var responseBuilder = require('./responseBuilder');
 var fs = require('fs');
 var request = require('request');
 var fileHelper = require('./fileHelper');
+var uuid = require('uuid/v1');
 
 function Barracks(options) {
   this.options = {
     baseURL: options.baseURL || DEFAULT_BARRACKS_BASE_URL,
-    apiKey: options.apiKey,
-    unitId: options.unitId
+    apiKey: options.apiKey
   };
 
   if (options.allowSelfSigned && options.allowSelfSigned === true) {
@@ -25,18 +26,25 @@ function Barracks(options) {
   }
 }
 
-Barracks.prototype.checkUpdate = function (packages, customClientData) {
+Barracks.prototype.getDevicePackages = function (unitId, packages, customClientData) {
   var that = this;
   return new Promise(function (resolve, reject) {
+    if (!unitId || !packages) {
+      reject({
+        type: ERROR_MISSING_MANDATORY_ARGUMENT,
+        message: 'missing or empty unitId or packages arguments'
+      });
+    }
+
     var requestOptions = {
-      url: that.options.baseURL + CHECK_UPDATE_ENDPOINT,
+      url: that.options.baseURL + GET_DEVICE_PACKAGES_ENDPOINT,
       method: 'POST',
       headers: {
         'Authorization': that.options.apiKey,
         'Content-type': 'application/json'
       },
       body: JSON.stringify({
-        unitId: that.options.unitId,
+        unitId: unitId,
         customClientData: customClientData,
         components: packages
       })
@@ -64,6 +72,15 @@ Barracks.prototype.checkUpdate = function (packages, customClientData) {
 Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
   var that = this;
   return new Promise(function (resolve, reject) {
+    if (!packageInfo) {
+      reject({
+        type: ERROR_MISSING_MANDATORY_ARGUMENT,
+        message: 'missing or empty packageInfo argument'
+      });
+    }
+
+    filePath = filePath || uuid() + '_' + packageInfo.filename;
+
     var downloadParams = {
       url: packageInfo.url,
       method: 'GET',

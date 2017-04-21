@@ -14,3 +14,10 @@ deploy:
   on:
     tags: true
     repo: barracksiot/javascript-client
+
+notifications:
+  slack: 
+    rooms:
+      secure: "ctLNliKum/SL5FhQ5PvrNkf67/fq6f6ud0V7XyZLBw5JHhn+ro8FoTY+IhZz3qh6F0AqcO0xItzBFEsY66D6gd3x+1QzYgdPvBkB42MDmE6abFrLy8LBrRpin1UEm1rtw9gQenwm+xMi8eGzytX8cSoZWR689h5mcYoN6tpWh8rxYny2XuY8BOHbLuTOJbbHpvDkAJqaZTgfhxlwhfIMKrCVvmenrvBRXuNP/mq/xxYo2Go2+H72d2IKOd1gOv7GsALhLOd3UAbhXeoK3pOUxw4jQCMYR7PjlT+LXjt4MVqElce998tbf+FAPTw9QVJc6y9jLXcto5jRBpeEdx/Wey457lBemaga375rzz3EM0gvSjwB+EhHZlq9nlhXB4iUVrZ3TiMRX6ZG6o3JoZXh7CTq2z8Mc9e0GqQ7/V21jHIuMxeUtCCTAjlRH+/5tlkwPGpEQ73UYDGdK2qjc9AWgkZZ08/ur5oEY4Mw6p5B2GcxPobgfVH/bp8ldhBrBJM0A4er7hIXimckRORvFZNg+jRTCNQYPLpyRSaIiJWGfGXaiitcaYO8z9lv835QpDbSxM3rEbGZOh+cDOHaoK7TUnw9kvai3mkgT6xkyKfj4ewC/3r0TpMvHlYpI3eRr0vkVkTLLGZedB7jOuYve31cHFDrlNSEDSw+Xwkcj1ukS8w="
+    on_success: change
+    on_failure: always

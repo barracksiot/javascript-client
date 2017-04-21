@@ -12,6 +12,10 @@ chai.use(sinonChai);
 
 var UNIT_ID = 'unit1';
 var API_KEY = 'validKey';
+var CUSTOM_CLIENT_DATA = {
+  aKey: 'aValue',
+  anotherKey: true
+};
 
 var component1 = {
   reference: 'component.1.ref',
@@ -33,10 +37,9 @@ describe('Constructor : ', function () {
   function validateBarracksObject(barracks, expectedBaseUrl) {
     expect(barracks).to.be.an('object');
     expect(barracks.options).to.be.an('object');
-    expect(barracks.checkUpdate).to.be.a('function');
+    expect(barracks.getDevicePackages).to.be.a('function');
     expect(barracks.options).to.deep.equals({
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       baseURL: expectedBaseUrl
     });
   }
@@ -44,8 +47,7 @@ describe('Constructor : ', function () {
   it('Should return the Barracks object with default values when minimums options given', function () {
     // Given
     var options = {
-      apiKey: API_KEY,
-      unitId: UNIT_ID
+      apiKey: API_KEY
     };
 
     // When
@@ -60,7 +62,6 @@ describe('Constructor : ', function () {
     var url = 'not.barracks.io';
     var options = {
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       baseURL: url
     };
 
@@ -75,7 +76,6 @@ describe('Constructor : ', function () {
     // Given
     var options = {
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       allowSelfSigned: 'plop'
     };
 
@@ -91,7 +91,6 @@ describe('Constructor : ', function () {
     // Given
     var options = {
       apiKey: API_KEY,
-      unitId: UNIT_ID,
       allowSelfSigned: true
     };
 
@@ -104,16 +103,16 @@ describe('Constructor : ', function () {
   });
 });
 
-describe('checkUpdate(components, customClientData) ', function () {
+describe('getDevicePackages(unitId, components, customClientData) ', function () {
 
   var barracks;
-  var checkUpdateComponentsUrl = '/api/device/resolve';
+  var getDevicePackagesComponentsUrl = '/api/device/resolve';
   var requestMock = function () {};
   var buildResponseMock = function () {};
 
-  function getRequestPayloadForComponents(components) {
+  function getRequestPayloadForComponents(components, customClientData) {
     return {
-      url: 'https://app.barracks.io' + checkUpdateComponentsUrl,
+      url: 'https://app.barracks.io' + getDevicePackagesComponentsUrl,
       method: 'POST',
       headers: {
         'Authorization': API_KEY,
@@ -121,7 +120,7 @@ describe('checkUpdate(components, customClientData) ', function () {
       },
       body: JSON.stringify({
         unitId: UNIT_ID,
-        customClientData: undefined,
+        customClientData: customClientData,
         components: components
       })
     };
@@ -148,6 +147,64 @@ describe('checkUpdate(components, customClientData) ', function () {
     });
   });
 
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when no unitId given', function (done) {
+    // Given
+    var components = [ component1, component2 ];
+
+    // When / Then
+    barracks.getDevicePackages(undefined, components).then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when empty unitId given', function (done) {
+    // Given
+    var components = [ component1, component2 ];
+
+    // When / Then
+    barracks.getDevicePackages('', components).then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when no packages given', function (done) {
+    // When / Then
+    barracks.getDevicePackages(UNIT_ID).then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when empty packages given', function (done) {
+    // When / Then
+    barracks.getDevicePackages(UNIT_ID, '').then(function () {
+      done('should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty unitId or packages arguments'
+      });
+      done();
+    });
+  });
+
   it('Should return request failed error when request failed', function (done) {
     // Given
     var error = { message: 'Error occured' };
@@ -159,7 +216,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function () {
+    barracks.getDevicePackages(UNIT_ID, components).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -187,7 +244,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function () {
+    barracks.getDevicePackages(UNIT_ID, components).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -228,11 +285,54 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function (result) {
+    barracks.getDevicePackages(UNIT_ID, components).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
         getRequestPayloadForComponents(components),
+        sinon.match.func
+      );
+      expect(buildResponseSpy).to.have.been.calledOnce;
+      expect(buildResponseSpy).to.have.been.calledWithExactly(
+        componentInfo,
+        sinon.match.func
+      );
+      done();
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('Should send customClientData and return server response when server return 200 OK', function (done) {
+    // Given
+    var componentInfo = {
+      available:[],
+      changed:[],
+      unchanged:[],
+      unavailable:[]
+    };
+    var response = {
+      body: JSON.stringify(componentInfo),
+      statusCode: 200
+    };
+    var components = [ component1, component2 ];
+    var requestSpy = sinon.spy();
+    requestMock = function (options, callback) {
+      requestSpy(options, callback);
+      callback(undefined, response, response.body);
+    };
+    var buildResponseSpy = sinon.spy();
+    buildResponseMock = function (body, downloadFunction) {
+      buildResponseSpy(body, downloadFunction);
+      return componentInfo;
+    };
+
+    // When / Then
+    barracks.getDevicePackages(UNIT_ID, components, CUSTOM_CLIENT_DATA).then(function (result) {
+      expect(result).to.deep.equals(componentInfo);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly(
+        getRequestPayloadForComponents(components, CUSTOM_CLIENT_DATA),
         sinon.match.func
       );
       expect(buildResponseSpy).to.have.been.calledOnce;
@@ -271,7 +371,7 @@ describe('checkUpdate(components, customClientData) ', function () {
     };
 
     // When / Then
-    barracks.checkUpdate(components).then(function (result) {
+    barracks.getDevicePackages(UNIT_ID, components).then(function (result) {
       expect(result).to.deep.equals(componentInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
@@ -297,6 +397,7 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
   var checkMd5Mock = function () {};
   var deleteFileMock = function () {};
   var requestMock = function () {};
+  var uuidMock = function() {};
 
   beforeEach(function () {
     var Barracks = proxyquire('../src/index.js', {
@@ -315,12 +416,41 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
       },
       'request': function (params) {
         return requestMock(params);
+      },
+      'uuid/v1': function () {
+        return uuidMock();
       }
     });
 
     barracks = new Barracks({
       apiKey: API_KEY,
       unitId: UNIT_ID
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when no packageInfo given', function (done) {
+    // When / Then
+    barracks.downloadPackage().then(function () {
+      done('Should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty packageInfo argument'
+      });
+      done();
+    });
+  });
+
+  it('Should reject MISSING_MANDATORY_ARGUMENT error when empty packageInfo given', function (done) {
+    // When / Then
+    barracks.downloadPackage('').then(function () {
+      done('Should have failed');
+    }).catch(function (err) {
+      expect(err).to.deep.equals({
+        type: 'MISSING_MANDATORY_ARGUMENT',
+        message: 'missing or empty packageInfo argument'
+      });
+      done();
     });
   });
 
@@ -515,6 +645,80 @@ describe('downloadPackage(packageInfo, filePath) ', function () {
       expect(checkMd5Spy).to.have.been.calledOnce;
       expect(checkMd5Spy).to.have.been.calledWithExactly(
         filePath,
+        packageInfo.md5
+      );
+      done();
+    }).catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('Should generate random path for the file to download when no filePath given', function (done) {
+    // Given
+    var response = { statusCode: 200 };
+    var packageInfo = {
+      package: 'abc.edf',
+      version: '0.0.1',
+      url: 'https://not.barracks.io/path/to/file',
+      filename: 'myFile.sh',
+      size: 42,
+      md5: 'deadbeefbadc0ffee'
+    };
+
+    var fileStream = new Stream();
+    var createWriteStreamSpy = sinon.spy();
+    createWriteStreamMock = function (path) {
+      createWriteStreamSpy(path);
+      return fileStream;
+    };
+
+    var requestStream = new Stream();
+    var requestSpy = sinon.spy();
+    requestMock = function (params) {
+      requestSpy(params);
+      return requestStream;
+    };
+
+    var checkMd5Spy = sinon.spy();
+    checkMd5Mock = function (path, checksum) {
+      checkMd5Spy(path, checksum);
+      return Promise.resolve();
+    };
+
+    var uuidSpy = sinon.spy();
+    var randomUuid = 'qaserdxcftygvghujhnbnjkmklknbhgfcxdesazw';
+    uuidMock = function () {
+      uuidSpy();
+      return randomUuid;
+    };
+
+    var expectedFilePath = randomUuid + '_' + packageInfo.filename;
+
+    setTimeout(function () {
+      requestStream.emit('response', response);
+    }, 75);
+    setTimeout(function () {
+      fileStream.emit('close');
+    }, 95);
+
+    // When / Then
+    barracks.downloadPackage(packageInfo).then(function (result) {
+      expect(result).to.be.equals(expectedFilePath);
+      expect(uuidSpy).to.have.been.calledOnce;
+      expect(uuidSpy).to.have.been.calledWithExactly();
+      expect(createWriteStreamSpy).to.have.been.calledOnce;
+      expect(createWriteStreamSpy).to.have.been.calledWithExactly(expectedFilePath);
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy).to.have.been.calledWithExactly({
+        url: packageInfo.url,
+        method: 'GET',
+        headers: {
+          Authorization: API_KEY
+        }
+      });
+      expect(checkMd5Spy).to.have.been.calledOnce;
+      expect(checkMd5Spy).to.have.been.calledWithExactly(
+        expectedFilePath,
         packageInfo.md5
       );
       done();

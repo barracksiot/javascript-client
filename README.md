@@ -63,7 +63,7 @@ var customClientData = {
   }
 };
 
-barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
+barracks.getDevicePackages(unitId, packages, customClientData).then(function (packagesInfo) {
   packagesInfo.available.forEach(function (packageInfo) {
     // Do something with the newly available packages
   });
@@ -84,7 +84,7 @@ barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
 });
 ```
 
-The ```checkUpdate``` response is always as follow :
+The ```getDevicePackages``` response is always as follow :
 
 ```js
 {
@@ -94,8 +94,9 @@ The ```checkUpdate``` response is always as follow :
       reference: "abc.edf",
       version: "0.0.1",
       url: "https://app.barracks.io/path/to/package/version/",
-      size: 42,
       md5: "deadbeefbadc0ffee",
+      size: 42,
+      filename: 'aFile.sh',
       download: function (filePath) {} // Function to download package
     }
   ],
@@ -105,8 +106,9 @@ The ```checkUpdate``` response is always as follow :
       reference: "abc.edf",
       version: "0.0.1",
       url: "https://app.barracks.io/path/to/package/version/",
-      size: 42,
       md5: "deadbeefbadc0ffee",
+      size: 42,
+      filename: 'aFile.sh',
       download: function (filePath) {} // Function to download package
     }
   ],
@@ -128,7 +130,10 @@ The ```checkUpdate``` response is always as follow :
 
 ### Download a package
 
-Once you have the response from checkUpdate, you'll be able to download file for all packages that are available for the device (packages that are in the ```available```, and ```changed``` lists of the response).
+Once you have the response from getDevicePackages, you'll be able to download file for all packages that are available for the device (packages that are in the ```available```, and ```changed``` lists of the response).
+
+The ```filePath``` argument of the download function is optionnal. The default value will be as follow:
+```<random-uuid>_<original-filename>```
 
 ```js
 var packages = [
@@ -142,7 +147,7 @@ var packages = [
   }
 ];
 
-barracks.checkUpdate(packages, customClientData).then(function (packagesInfo) {
+barracks.getDevicePackages(unitId, packages, customClientData).then(function (packagesInfo) {
   var downloadAvailablePackagesPromise = Promise.all(
     packagesInfo.available.map(function (packageInfo) {
       return packageInfo.download('/tmp/' + package.filename); // Return a Promise
@@ -180,12 +185,13 @@ All errors returned by the SDK follow the same object format:
 
 Error type can be one of the the following:
 
-* `REQUEST_FAILED`, is returned by both `Barracks.checkUpdate()` and `Barracks.checkUpdateAndDownload()` methods if the check update request fails. The error object also contains one additional property `requestError` that is the `Error` object returned by the [request](https://www.npmjs.com/package/request) library.
-* `UNEXPECTED_SERVER_RESPONSE`, is returned by both `Barracks.checkUpdate()` and `Barracks.checkUpdateAndDownload()` methods if the HTTP response code is not `200` (a new update is available) or `204` (no update available).
-* `DOWNLOAD_FAILED`, is returned by both `Update.download()` and `Barracks.checkUpdateAndDownload()` methods if the download of an update package fails.
-* `DELETE_FILE_FAILED`, is returned by both `Update.download()` and `Barracks.checkUpdateAndDownload()` methods if the SDK fail to delete an update package that did not pass the MD5 checksum verification.
-* `CHECKSUM_VERIFICATION_FAILED`, is returned by both `Update.download()` and `Barracks.checkUpdateAndDownload()` methods if the MD5 checksum verification of the update package downloaded fails.
-* `MD5_HASH_CREATION_FAILED`, is returned by both `Update.download()` and `Barracks.checkUpdateAndDownload()` methods if the SDK is not able to generate the MD5 checksum of the update package downloaded.
+* `MISSING_MANDATORY_ARGUMENT`, is returned by both `Barracks.getDevicePackages()` and `Package.download()`. It indicate that one or more of the mandatory arguments are missing.
+* `REQUEST_FAILED`, is returned by `Barracks.getDevicePackages()` method if the getDevicePackage request fails. The error object also contains one additional property `requestError` that is the `Error` object returned by the [request](https://www.npmjs.com/package/request) library.
+* `UNEXPECTED_SERVER_RESPONSE`, is returned by `Barracks.getDevicePackages()` method if the HTTP response code is not `200`.
+* `DOWNLOAD_FAILED`, is returned by `Package.download()` method if the download of a package fails.
+* `DELETE_FILE_FAILED`, is returned by `Package.download()` method if the SDK fail to delete a package that did not pass the MD5 checksum verification.
+* `CHECKSUM_VERIFICATION_FAILED`, is returned by `Package.download()` method if the MD5 checksum verification of the package downloaded fails.
+* `MD5_HASH_CREATION_FAILED`, is returned by `Package.download()` method if the SDK is not able to generate the MD5 checksum of the package downloaded.
 
 ## Docs & Community
 
