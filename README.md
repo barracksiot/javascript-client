@@ -63,7 +63,7 @@ var customClientData = {
   }
 };
 
-barracks.getDevicePackages(packages, customClientData).then(function (packagesInfo) {
+barracks.getDevicePackages(unitId, packages, customClientData).then(function (packagesInfo) {
   packagesInfo.available.forEach(function (packageInfo) {
     // Do something with the newly available packages
   });
@@ -147,7 +147,7 @@ var packages = [
   }
 ];
 
-barracks.getDevicePackages(packages, customClientData).then(function (packagesInfo) {
+barracks.getDevicePackages(unitId, packages, customClientData).then(function (packagesInfo) {
   var downloadAvailablePackagesPromise = Promise.all(
     packagesInfo.available.map(function (packageInfo) {
       return packageInfo.download('/tmp/' + package.filename); // Return a Promise
