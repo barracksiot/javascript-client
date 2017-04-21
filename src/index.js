@@ -1,12 +1,12 @@
 'use strict';
 
-var ERROR_REQUEST_FAILED              = 'REQUEST_FAILED';
-var ERROR_DOWNLOAD_FAILED             = 'DOWNLOAD_FAILED';
-var ERROR_UNEXPECTED_SERVER_RESPONSE  = 'UNEXPECTED_SERVER_RESPONSE';
-var ERROR_MISSING_MANDATORY_ARGUMENT  = 'MISSING_MANDATORY_ARGUMENT';
+var ERROR_REQUEST_FAILED = 'REQUEST_FAILED';
+var ERROR_DOWNLOAD_FAILED = 'DOWNLOAD_FAILED';
+var ERROR_UNEXPECTED_SERVER_RESPONSE = 'UNEXPECTED_SERVER_RESPONSE';
+var ERROR_MISSING_MANDATORY_ARGUMENT = 'MISSING_MANDATORY_ARGUMENT';
 
-var DEFAULT_BARRACKS_BASE_URL         = 'https://app.barracks.io';
-var GET_DEVICE_PACKAGES_ENDPOINT      = '/api/device/resolve';
+var DEFAULT_BARRACKS_BASE_URL = 'https://app.barracks.io';
+var GET_DEVICE_PACKAGES_ENDPOINT = '/api/device/resolve';
 
 require('es6-promise').polyfill();
 var responseBuilder = require('./responseBuilder');
@@ -26,9 +26,9 @@ function Barracks(options) {
   }
 }
 
-Barracks.prototype.getDevicePackages = function (unitId, packages, customClientData) {
+Barracks.prototype.getDevicePackages = function(unitId, packages, customClientData) {
   var that = this;
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     if (!unitId || !packages) {
       reject({
         type: ERROR_MISSING_MANDATORY_ARGUMENT,
@@ -46,11 +46,11 @@ Barracks.prototype.getDevicePackages = function (unitId, packages, customClientD
       body: JSON.stringify({
         unitId: unitId,
         customClientData: customClientData,
-        components: packages
+        packages: packages
       })
     };
 
-    request(requestOptions, function (error, response, body) {
+    request(requestOptions, function(error, response, body) {
       if (error) {
         reject({
           type: ERROR_REQUEST_FAILED,
@@ -69,9 +69,9 @@ Barracks.prototype.getDevicePackages = function (unitId, packages, customClientD
   });
 };
 
-Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
+Barracks.prototype.downloadPackage = function(packageInfo, filePath) {
   var that = this;
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     if (!packageInfo) {
       reject({
         type: ERROR_MISSING_MANDATORY_ARGUMENT,
@@ -90,21 +90,21 @@ Barracks.prototype.downloadPackage = function (packageInfo, filePath) {
     };
 
     var fileStream = fs.createWriteStream(filePath);
-    request(downloadParams).on('response', function (response) {
+    request(downloadParams).on('response', function(response) {
       if (response.statusCode != 200) {
         fileStream.emit('error', {
           type: ERROR_DOWNLOAD_FAILED,
           message: 'Server replied with HTTP ' + response.statusCode
         });
       }
-    }).pipe(fileStream).on('close', function () {
-      fileHelper.checkMd5(filePath, packageInfo.md5).then(function () {
+    }).pipe(fileStream).on('close', function() {
+      fileHelper.checkMd5(filePath, packageInfo.md5).then(function() {
         resolve(filePath);
-      }).catch(function (err) {
+      }).catch(function(err) {
         fileHelper.deleteFile(filePath, reject);
         reject(err);
       });
-    }).on('error', function (err) {
+    }).on('error', function(err) {
       fileHelper.deleteFile(filePath, reject);
       reject(err);
     });
