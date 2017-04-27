@@ -8,7 +8,7 @@ The JavaScript SDK to interact with the [Barracks](https://barracks.io/) API
 ## Installation
 
 ```bash
-$ npm install barracks-sdk
+$ npm install barracks-sdk@v2
 ```
 
 ## Usage
