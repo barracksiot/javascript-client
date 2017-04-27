@@ -17,12 +17,12 @@ var CUSTOM_CLIENT_DATA = {
   anotherKey: true
 };
 
-var component1 = {
-  reference: 'component.1.ref',
+var package1 = {
+  reference: 'package.1.ref',
   version: '1.2.3'
 };
-var component2 = {
-  reference: 'component.2.ref',
+var package2 = {
+  reference: 'package.2.ref',
   version: '4.5.6'
 };
 
@@ -103,16 +103,16 @@ describe('Constructor : ', function () {
   });
 });
 
-describe('getDevicePackages(unitId, components, customClientData) ', function () {
+describe('getDevicePackages(unitId, packages, customClientData) ', function () {
 
   var barracks;
-  var getDevicePackagesComponentsUrl = '/api/device/resolve';
+  var getDevicePackagespackagesUrl = '/api/device/resolve';
   var requestMock = function () {};
   var buildResponseMock = function () {};
 
-  function getRequestPayloadForComponents(components, customClientData) {
+  function getRequestPayloadForPackages(packages, customClientData) {
     return {
-      url: 'https://app.barracks.io' + getDevicePackagesComponentsUrl,
+      url: 'https://app.barracks.io' + getDevicePackagespackagesUrl,
       method: 'POST',
       headers: {
         'Authorization': API_KEY,
@@ -121,7 +121,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
       body: JSON.stringify({
         unitId: UNIT_ID,
         customClientData: customClientData,
-        components: components
+        packages: packages
       })
     };
   }
@@ -149,10 +149,10 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
 
   it('Should reject MISSING_MANDATORY_ARGUMENT error when no unitId given', function (done) {
     // Given
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
 
     // When / Then
-    barracks.getDevicePackages(undefined, components).then(function () {
+    barracks.getDevicePackages(undefined, packages).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -165,10 +165,10 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
 
   it('Should reject MISSING_MANDATORY_ARGUMENT error when empty unitId given', function (done) {
     // Given
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
 
     // When / Then
-    barracks.getDevicePackages('', components).then(function () {
+    barracks.getDevicePackages('', packages).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -208,7 +208,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
   it('Should return request failed error when request failed', function (done) {
     // Given
     var error = { message: 'Error occured' };
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
     var requestSpy = sinon.spy();
     requestMock = function (options, callback) {
       requestSpy(options, callback);
@@ -216,7 +216,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
     };
 
     // When / Then
-    barracks.getDevicePackages(UNIT_ID, components).then(function () {
+    barracks.getDevicePackages(UNIT_ID, packages).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -226,7 +226,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
       });
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
-        getRequestPayloadForComponents(components),
+        getRequestPayloadForPackages(packages),
         sinon.match.func
       );
       done();
@@ -236,7 +236,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
   it('Should return unexpected server response error when server do not return 200 OK', function (done) {
     // Given
     var response = { body: 'Internal error', statusCode: 500 };
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
     var requestSpy = sinon.spy();
     requestMock = function (options, callback) {
       requestSpy(options, callback);
@@ -244,7 +244,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
     };
 
     // When / Then
-    barracks.getDevicePackages(UNIT_ID, components).then(function () {
+    barracks.getDevicePackages(UNIT_ID, packages).then(function () {
       done('should have failed');
     }).catch(function (err) {
       expect(err).to.deep.equals({
@@ -253,7 +253,7 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
       });
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
-        getRequestPayloadForComponents(components),
+        getRequestPayloadForPackages(packages),
         sinon.match.func
       );
       done();
@@ -262,17 +262,17 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
 
   it('Should return server response when server return 200 OK', function (done) {
     // Given
-    var componentInfo = {
+    var packageInfo = {
       available:[],
       changed:[],
       unchanged:[],
       unavailable:[]
     };
     var response = {
-      body: JSON.stringify(componentInfo),
+      body: JSON.stringify(packageInfo),
       statusCode: 200
     };
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
     var requestSpy = sinon.spy();
     requestMock = function (options, callback) {
       requestSpy(options, callback);
@@ -281,20 +281,20 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
     var buildResponseSpy = sinon.spy();
     buildResponseMock = function (body, downloadFunction) {
       buildResponseSpy(body, downloadFunction);
-      return componentInfo;
+      return packageInfo;
     };
 
     // When / Then
-    barracks.getDevicePackages(UNIT_ID, components).then(function (result) {
-      expect(result).to.deep.equals(componentInfo);
+    barracks.getDevicePackages(UNIT_ID, packages).then(function (result) {
+      expect(result).to.deep.equals(packageInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
-        getRequestPayloadForComponents(components),
+        getRequestPayloadForPackages(packages),
         sinon.match.func
       );
       expect(buildResponseSpy).to.have.been.calledOnce;
       expect(buildResponseSpy).to.have.been.calledWithExactly(
-        componentInfo,
+        packageInfo,
         sinon.match.func
       );
       done();
@@ -305,17 +305,17 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
 
   it('Should send customClientData and return server response when server return 200 OK', function (done) {
     // Given
-    var componentInfo = {
+    var packageInfo = {
       available:[],
       changed:[],
       unchanged:[],
       unavailable:[]
     };
     var response = {
-      body: JSON.stringify(componentInfo),
+      body: JSON.stringify(packageInfo),
       statusCode: 200
     };
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
     var requestSpy = sinon.spy();
     requestMock = function (options, callback) {
       requestSpy(options, callback);
@@ -324,20 +324,20 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
     var buildResponseSpy = sinon.spy();
     buildResponseMock = function (body, downloadFunction) {
       buildResponseSpy(body, downloadFunction);
-      return componentInfo;
+      return packageInfo;
     };
 
     // When / Then
-    barracks.getDevicePackages(UNIT_ID, components, CUSTOM_CLIENT_DATA).then(function (result) {
-      expect(result).to.deep.equals(componentInfo);
+    barracks.getDevicePackages(UNIT_ID, packages, CUSTOM_CLIENT_DATA).then(function (result) {
+      expect(result).to.deep.equals(packageInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
-        getRequestPayloadForComponents(components, CUSTOM_CLIENT_DATA),
+        getRequestPayloadForPackages(packages, CUSTOM_CLIENT_DATA),
         sinon.match.func
       );
       expect(buildResponseSpy).to.have.been.calledOnce;
       expect(buildResponseSpy).to.have.been.calledWithExactly(
-        componentInfo,
+        packageInfo,
         sinon.match.func
       );
       done();
@@ -348,17 +348,17 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
 
   it('Should return server response when server return 200 OK', function (done) {
     // Given
-    var componentInfo = {
+    var packageInfo = {
       available:[],
       changed:[],
       unchanged:[],
       unavailable:[]
     };
     var response = {
-      body: JSON.stringify(componentInfo),
+      body: JSON.stringify(packageInfo),
       statusCode: 200
     };
-    var components = [ component1, component2 ];
+    var packages = [ package1, package2 ];
     var requestSpy = sinon.spy();
     requestMock = function (options, callback) {
       requestSpy(options, callback);
@@ -367,20 +367,20 @@ describe('getDevicePackages(unitId, components, customClientData) ', function ()
     var buildResponseSpy = sinon.spy();
     buildResponseMock = function (body, downloadFunction) {
       buildResponseSpy(body, downloadFunction);
-      return componentInfo;
+      return packageInfo;
     };
 
     // When / Then
-    barracks.getDevicePackages(UNIT_ID, components).then(function (result) {
-      expect(result).to.deep.equals(componentInfo);
+    barracks.getDevicePackages(UNIT_ID, packages).then(function (result) {
+      expect(result).to.deep.equals(packageInfo);
       expect(requestSpy).to.have.been.calledOnce;
       expect(requestSpy).to.have.been.calledWithExactly(
-        getRequestPayloadForComponents(components),
+        getRequestPayloadForPackages(packages),
         sinon.match.func
       );
       expect(buildResponseSpy).to.have.been.calledOnce;
       expect(buildResponseSpy).to.have.been.calledWithExactly(
-        componentInfo,
+        packageInfo,
         sinon.match.func
       );
       done();

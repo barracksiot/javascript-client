@@ -46,7 +46,7 @@ Barracks.prototype.getDevicePackages = function (unitId, packages, customClientD
       body: JSON.stringify({
         unitId: unitId,
         customClientData: customClientData,
-        components: packages
+        packages: packages
       })
     };
 
