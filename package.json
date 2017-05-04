@@ -1,8 +1,8 @@
 {
-  "name": "barracks-sdk",
+  "name": "barracks-sdk-legacy",
   "version": "0.0.2",
   "build": 0,
-  "description": "Barracks SDK node module",
+  "description": "Barracks SDK V1 node module",
   "main": "src/index.js",
   "scripts": {
     "lint": "jshint **/**.js",
