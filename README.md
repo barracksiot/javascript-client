@@ -150,13 +150,13 @@ var packages = [
 barracks.getDevicePackages(unitId, packages, customClientData).then(function (packagesInfo) {
   var downloadAvailablePackagesPromise = Promise.all(
     packagesInfo.available.map(function (packageInfo) {
-      return packageInfo.download('/tmp/' + package.filename); // Return a Promise
+      return packageInfo.download('/tmp/' + packageInfo.filename); // Return a Promise
     })
   );
 
   var downloadChangedPackagesPromise = Promise.all(
     packagesInfo.changed.map(function (packageInfo) {
-      return packageInfo.download('/tmp/' + package.filename); // Return a Promise
+      return packageInfo.download('/tmp/' + packageInfo.filename); // Return a Promise
     })
   );
 
